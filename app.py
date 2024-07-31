@@ -48,8 +48,8 @@ st.set_page_config(layout="wide")
 st.markdown('### Please select search parameters 🔎')
 
 # Get format and pull relevant prompt
-format_choice = st.radio("Choose the preferred output format:", ['Summary', 'Alert'], index=None)
-if format_choice == 'Alert':
+format_choice = st.radio("Choose the preferred output format:", ['Summary', 'Informational Event'], index=None)
+if format_choice == 'Informational Event':
     url = f'{os.environ["LANGSMITH_ACC"]}/simple-rag'
 else:
     url = f'{os.environ["LANGSMITH_ACC"]}/simple-rag:9388b291'
@@ -225,7 +225,7 @@ if input_question:
                 end_time = time.time()
 
                 # Display tables
-                st.markdown(f'### These are top {max_doc_num} texts used for alert generation:')
+                st.markdown(f'### These are top {max_doc_num} texts used for generation:')
                 df = create_dataframe_from_response(response)
                 st.dataframe(df)
                 display_distribution_charts(df, selected_index)

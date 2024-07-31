@@ -65,83 +65,82 @@ def populate_default_values(index_name, es_config):
         country_values)
 
 
-index_options = [
-    'detector-media-tiktok',
-    'ua-by-facebook',
-    'ua-by-telegram',
-    'ua-by-web',
-    'ua-by-youtube',
-    'dm-8-countries-twitter',
-    'dm-8-countries-telegram',
-    'ndi-lithuania-instagram',
-    'ndi-lithuania-web',
-    'ndi-lithuania-youtube',
-    'ndi-lithuania-telegram',
-    'ndi-lithuania-initial-kivu-twitter',
-    'recovery-win-facebook',
-    'recovery-win-telegram',
-    'recovery-win-web',
-    'recovery-win-twitter',
-    'recovery-win-comments-telegram']
+# index_options = [
+#     'detector-media-tiktok',
+#     'ua-by-facebook',
+#     'ua-by-telegram',
+#     'ua-by-web',
+#     'ua-by-youtube',
+#     'dm-8-countries-twitter',
+#     'dm-8-countries-telegram',
+#     'ndi-lithuania-instagram',
+#     'ndi-lithuania-web',
+#     'ndi-lithuania-youtube',
+#     'ndi-lithuania-telegram',
+#     'ndi-lithuania-initial-kivu-twitter',
+#     'recovery-win-facebook',
+#     'recovery-win-telegram',
+#     'recovery-win-web',
+#     'recovery-win-twitter',
+#     'recovery-win-comments-telegram']
 
 project_indexes = {
-    'ua-by': [
-        'ua-by-facebook',
-        'ua-by-telegram',
-        'ua-by-web',
-        'ua-by-youtube'
-    ],
-    'oip': [
-        'oip-rt-web'
-    ],
-    'dem-by': [
-        'dem-by-instagram',
-        'dem-by-telegram',
-        'dem-by-web',
-        'dem-by-youtube',
-        'dem-by-vkontakte',
-        'dem-by-odnoklassniki',
-        'dem-by-whisper-tiktok'
-    ],
+    # 'ua-by': [
+    #     'ua-by-facebook',
+    #     'ua-by-telegram',
+    #     'ua-by-web',
+    #     'ua-by-youtube'
+    # ],
+    # 'oip': [
+    #     'oip-rt-web'
+    # ],
+    # 'dem-by': [
+    #     'dem-by-instagram',
+    #     'dem-by-telegram',
+    #     'dem-by-web',
+    #     'dem-by-youtube',
+    #     'dem-by-vkontakte',
+    #     'dem-by-odnoklassniki',
+    #     'dem-by-whisper-tiktok'
+    # ],
     'dem-arm': [
         'dem-arm-facebook',
         'dem-arm-telegram',
         'dem-arm-web',
         'dem-arm-youtube'
-    ],
-    'dm-8-countries': [
-        'dm-8-countries-twitter',
-        'dm-8-countries-telegram'
-    ],
-    'recovery-win': [
-        'recovery-win-facebook',
-        'recovery-win-telegram',
-        'recovery-win-web',
-        'recovery-win-twitter',
-        'recovery-win-comments-telegram'
-    ],
-    'ru-balkans': [
-        'ru-balkans-facebook',
-        'ru-balkans-telegram',
-        'ru-balkans-youtube',
-        'ru-balkans-sample-facebook',
-        'ru-balkans-sample-telegram',
-        'ru-balkans-sample-youtube'
-    ],
-    'arabic_test': [
-        'arabic-translation-test-web',
-        'cs-disininfo-iq-telegram'
-    ],
-    'detector-media': [
-        'detector-media-tiktok',
-    ],
-    'eu4ge': [
-        'eu4ge-facebook',
-        'eu4ge-web',
-        'eu4ge-instagram',
-        'eu4ge-telegram',
-        'eu4ge-tiktok'
     ]
+    # 'dm-8-countries': [
+    #     'dm-8-countries-twitter',
+    #     'dm-8-countries-telegram'
+    # ],
+    # 'recovery-win': [
+    #     'recovery-win-facebook',
+    #     'recovery-win-telegram',
+    #     'recovery-win-web',
+    #     'recovery-win-twitter',
+    #     'recovery-win-comments-telegram'
+    # ],
+    # 'ru-balkans': [
+    #     'ru-balkans-facebook',
+    #     'ru-balkans-telegram',
+    #     'ru-balkans-youtube',
+    #     'ru-balkans-sample-facebook',
+    #     'ru-balkans-sample-telegram',
+    #     'ru-balkans-sample-youtube'
+    # ],
+    # 'arabic_test': [
+    #     'arabic-translation-test-web',
+    #     'cs-disininfo-iq-telegram'
+    # ],
+    # 'detector-media': [
+    #     'detector-media-tiktok',
+    # ],
+    # 'eu4ge': [
+    #     'eu4ge-facebook',
+    #     'eu4ge-web',
+    #     'eu4ge-instagram',
+    #     'eu4ge-telegram',
+    #     'eu4ge-tiktok'
 }
 flat_index_list = [index for indexes in project_indexes.values() for index in indexes]
 
