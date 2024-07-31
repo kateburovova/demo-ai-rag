@@ -1,0 +1,16 @@
+streamlit
+altair
+pandas
+numpy
+angle-emb>=0.4
+elasticsearch
+python-dotenv
+langchain
+langchain_openai
+langchainhub
+langchain-community
+plotly
+#tenacity==8.3.0
+#tenacity>=8.5.0
+#urllib3>=2.2.2
+#cryptography==42.0.8
