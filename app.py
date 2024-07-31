@@ -1,6 +1,7 @@
 # Base
 import os
 import time
+from datetime import datetime
 
 # Internal
 from authentificate import check_password
@@ -151,11 +152,14 @@ if input_question:
     vec = angle.encode({'text': input_question}, to_numpy=True, prompt=Prompts.C)
     question_vector = vec.tolist()[0]
 
+    default_start_date = datetime(2024, 7, 15)
+    default_end_date = datetime(2024, 7, 30)
+
     # Get input dates
-    selected_start_date = st.date_input("Select start date:")
+    selected_start_date = st.date_input("Select start date:", default_start_date)
     formatted_start_date = selected_start_date.strftime("%Y-%m-%d")
     st.write("You selected start date:", selected_start_date)
-    selected_end_date = st.date_input("Select end date:")
+    selected_end_date = st.date_input("Select end date:", default_end_date)
     formatted_end_date = selected_end_date.strftime("%Y-%m-%d")
     st.write("You selected end date:", selected_end_date)
     must_term = create_must_term(category_terms_one,
