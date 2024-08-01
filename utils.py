@@ -303,16 +303,27 @@ def extract_fields(mapping, prefix, current_path=''):
     return fields
 
 
+# def populate_terms(selected_items, field):
+#     """
+#     Creates a list of 'term' queries for Elasticsearch based on selected items.
+#     Returns:
+#         list: A list of 'term' queries for inclusion in an Elasticsearch 'should' clause.
+#     """
+#     if (selected_items is None) or ("Any" in selected_items):
+#         return []
+#     else:
+#         return [{"term": {field: item}} for item in selected_items]
+
 def populate_terms(selected_items, field):
     """
-    Creates a list of 'term' queries for Elasticsearch based on selected items.
+    Creates a list of terms for Elasticsearch based on selected items.
     Returns:
-        list: A list of 'term' queries for inclusion in an Elasticsearch 'should' clause.
+        list: A list of selected terms.
     """
     if (selected_items is None) or ("Any" in selected_items):
         return []
     else:
-        return [{"term": {field: item}} for item in selected_items]
+        return selected_items
 
 
 # def add_terms_condition(must_list, terms):
@@ -327,12 +338,18 @@ def populate_terms(selected_items, field):
 #             }
 #         })
 
+# def add_terms_condition(must_list, terms, field):
+#     if terms:
+#         must_list.append({
+#             "bool": {
+#                 "must": [{"term": {field: item}} for item in terms]
+#             }
+#         })
+
 def add_terms_condition(must_list, terms, field):
     if terms:
         must_list.append({
-            "bool": {
-                "must": [{"term": {field: item}} for item in terms]
-            }
+            "terms": {field: terms}
         })
 
 
