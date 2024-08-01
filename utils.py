@@ -379,20 +379,49 @@ def add_terms_condition(must_list, terms, field):
 #
 #     return must_term
 
+# def create_must_term(category_one_terms, category_two_terms, language_terms, country_terms, formatted_start_date,
+#                      formatted_end_date, thresholds_dict=None):
+#     must_term = [
+#         {"range": {"date": {"gte": formatted_start_date, "lte": formatted_end_date}}}
+#     ]
+#
+#     add_terms_condition(must_term, category_one_terms, 'misc.category_one.keyword')
+#     add_terms_condition(must_term, category_two_terms, 'misc.category_two.keyword')
+#     add_terms_condition(must_term, language_terms, 'language.keyword')
+#     add_terms_condition(must_term, country_terms, 'country.keyword')
+#
+#     if thresholds_dict:
+#         add_issues_conditions(must_term, thresholds_dict)
+#
+#     return must_term
+
 def create_must_term(category_one_terms, category_two_terms, language_terms, country_terms, formatted_start_date,
                      formatted_end_date, thresholds_dict=None):
+    logging.info(
+        f"Creating must term with: category_one_terms={category_one_terms}, category_two_terms={category_two_terms}")
     must_term = [
         {"range": {"date": {"gte": formatted_start_date, "lte": formatted_end_date}}}
     ]
 
-    add_terms_condition(must_term, category_one_terms, 'misc.category_one.keyword')
-    add_terms_condition(must_term, category_two_terms, 'misc.category_two.keyword')
-    add_terms_condition(must_term, language_terms, 'language.keyword')
-    add_terms_condition(must_term, country_terms, 'country.keyword')
+    if category_one_terms:
+        add_terms_condition(must_term, category_one_terms, 'misc.category_one.keyword')
+        logging.info(f"After adding category one: {must_term}")
+
+    if category_two_terms:
+        add_terms_condition(must_term, category_two_terms, 'misc.category_two.keyword')
+        logging.info(f"After adding category two: {must_term}")
+    else:
+        logging.info("Category two terms were empty, not added to query")
+
+    if language_terms:
+        add_terms_condition(must_term, language_terms, 'language.keyword')
+    if country_terms:
+        add_terms_condition(must_term, country_terms, 'country.keyword')
 
     if thresholds_dict:
         add_issues_conditions(must_term, thresholds_dict)
 
+    logging.info(f"Final must term: {must_term}")
     return must_term
 
 
