@@ -76,33 +76,6 @@ def get_multiple_unique_values(index_name, fields, es_config):
 
 
 @st.cache_data(ttl=3600)
-# def populate_default_values(index_name, es_config):
-#     """
-#     Retrieves unique values for specified fields from an Elasticsearch index
-#     and appends an "Any" option to each list from the specified Elasticsearch index.
-#     """
-#     if "dem-arm" in index_name:
-#         category_level_one_values = get_unique_category_values(index_name, 'misc.category_one.keyword', es_config)
-#         category_level_two_values = get_unique_category_values(index_name, 'misc.category_two.keyword', es_config)
-#         category_level_one_values.append("Any")
-#         category_level_two_values.append("Any")
-#     elif "ru-balkans" in index_name:
-#         category_level_one_values = get_unique_category_values(index_name, 'misc.category_one.keyword', es_config)
-#         category_level_one_values.append("Any")
-#         category_level_two_values = []
-#     else:
-#         category_level_one_values = get_unique_category_values(index_name, 'category.keyword', es_config)
-#         category_level_one_values.append("Any")
-#         category_level_two_values = []
-#
-#     language_values = get_unique_category_values(index_name, 'language.keyword', es_config)
-#     country_values = get_unique_category_values(index_name, 'country.keyword', es_config)
-#
-#     language_values.append("Any")
-#     country_values.append("Any")
-#
-#     return sorted(category_level_one_values), sorted(category_level_two_values), sorted(language_values), sorted(
-#         country_values)
 def populate_default_values(index_name, es_config):
     """
     Retrieves unique values for specified fields from an Elasticsearch index
@@ -139,102 +112,18 @@ def populate_default_values(index_name, es_config):
             sorted(country_values))
 
 
-# index_options = [
-#     'detector-media-tiktok',
-#     'ua-by-facebook',
-#     'ua-by-telegram',
-#     'ua-by-web',
-#     'ua-by-youtube',
-#     'dm-8-countries-twitter',
-#     'dm-8-countries-telegram',
-#     'ndi-lithuania-instagram',
-#     'ndi-lithuania-web',
-#     'ndi-lithuania-youtube',
-#     'ndi-lithuania-telegram',
-#     'ndi-lithuania-initial-kivu-twitter',
-#     'recovery-win-facebook',
-#     'recovery-win-telegram',
-#     'recovery-win-web',
-#     'recovery-win-twitter',
-#     'recovery-win-comments-telegram']
-
 project_indexes = {
-    # 'ua-by': [
-    #     'ua-by-facebook',
-    #     'ua-by-telegram',
-    #     'ua-by-web',
-    #     'ua-by-youtube'
-    # ],
-    # 'oip': [
-    #     'oip-rt-web'
-    # ],
-    # 'dem-by': [
-    #     'dem-by-instagram',
-    #     'dem-by-telegram',
-    #     'dem-by-web',
-    #     'dem-by-youtube',
-    #     'dem-by-vkontakte',
-    #     'dem-by-odnoklassniki',
-    #     'dem-by-whisper-tiktok'
-    # ],
     'dem-arm': [
         'dem-arm-facebook',
         'dem-arm-telegram',
         'dem-arm-web',
         'dem-arm-youtube'
     ]
-    # 'dm-8-countries': [
-    #     'dm-8-countries-twitter',
-    #     'dm-8-countries-telegram'
-    # ],
-    # 'recovery-win': [
-    #     'recovery-win-facebook',
-    #     'recovery-win-telegram',
-    #     'recovery-win-web',
-    #     'recovery-win-twitter',
-    #     'recovery-win-comments-telegram'
-    # ],
-    # 'ru-balkans': [
-    #     'ru-balkans-facebook',
-    #     'ru-balkans-telegram',
-    #     'ru-balkans-youtube',
-    #     'ru-balkans-sample-facebook',
-    #     'ru-balkans-sample-telegram',
-    #     'ru-balkans-sample-youtube'
-    # ],
-    # 'arabic_test': [
-    #     'arabic-translation-test-web',
-    #     'cs-disininfo-iq-telegram'
-    # ],
-    # 'detector-media': [
-    #     'detector-media-tiktok',
-    # ],
-    # 'eu4ge': [
-    #     'eu4ge-facebook',
-    #     'eu4ge-web',
-    #     'eu4ge-instagram',
-    #     'eu4ge-telegram',
-    #     'eu4ge-tiktok'
 }
 flat_index_list = [index for indexes in project_indexes.values() for index in indexes]
 
 
 @st.cache_data(ttl=3600)  # Cache for 1 hour
-# def get_prefixed_fields(index_, prefix, es_config):
-#     es = Elasticsearch(f'https://{es_config["host"]}:{es_config["port"]}', api_key=es_config["api_key"],
-#                        request_timeout=600)
-#     base_index = '-'.join(index_.split('-')[:2])
-#     indices = es.cat.indices(index=f"{base_index}*", h="index").split()
-#
-#     all_fields = set()
-#
-#     for index in indices:
-#         mapping = es.indices.get_mapping(index=index)
-#         fields = extract_fields(mapping[index]['mappings'], 'issues.')
-#         prefixed_fields = [field for field in fields if field.startswith(prefix)]
-#         all_fields.update(prefixed_fields)
-#
-#     return list(all_fields)
 def get_prefixed_fields(index_, prefix, es_config):
     es = Elasticsearch(f'https://{es_config["host"]}:{es_config["port"]}', api_key=es_config["api_key"],
                        request_timeout=600)
@@ -283,17 +172,6 @@ def add_issues_conditions(must_list, thresholds_dict):
     })
 
 
-# def extract_fields(mapping, target_prefix):
-#     fields = []
-#     if 'properties' in mapping:
-#         for field, props in mapping['properties'].items():
-#             if field == target_prefix.rstrip('.'):
-#                 sub_fields = extract_fields(props, field)
-#                 fields += [f"{field}.{sub}" for sub in sub_fields]
-#             else:
-#                 fields.append(field)
-#                 fields += extract_fields(props, "")
-#     return fields
 def extract_fields(mapping, prefix, current_path=''):
     fields = []
     if 'properties' in mapping:
@@ -304,17 +182,6 @@ def extract_fields(mapping, prefix, current_path=''):
             fields.extend(extract_fields(props, prefix, new_path))
     return fields
 
-
-# def populate_terms(selected_items, field):
-#     """
-#     Creates a list of 'term' queries for Elasticsearch based on selected items.
-#     Returns:
-#         list: A list of 'term' queries for inclusion in an Elasticsearch 'should' clause.
-#     """
-#     if (selected_items is None) or ("Any" in selected_items):
-#         return []
-#     else:
-#         return [{"term": {field: item}} for item in selected_items]
 
 def populate_terms(selected_items, field):
     """
@@ -329,71 +196,12 @@ def populate_terms(selected_items, field):
         return selected_items
 
 
-# def add_terms_condition(must_list, terms):
-#     """
-#     Adds individual term to Elasticsearch query.
-#     """
-#     if terms:
-#         must_list.append({
-#             "bool": {
-#                 "should": terms,
-#                 "minimum_should_match": 1
-#             }
-#         })
-
-# def add_terms_condition(must_list, terms, field):
-#     if terms:
-#         must_list.append({
-#             "bool": {
-#                 "must": [{"term": {field: item}} for item in terms]
-#             }
-#         })
-
 def add_terms_condition(must_list, terms, field):
     if terms:
         must_list.append({
             "terms": {field: terms}
         })
 
-
-# def create_must_term(category_one_terms, category_two_terms, language_terms, country_terms, formatted_start_date,
-#                      formatted_end_date, thresholds_dict=None):
-#     """
-#     Constructs a 'must' term for an Elasticsearch query that incorporates
-#     filters for date range, category, language, and country.
-#
-#     Each filter term is added to the 'must' term only if it is not None.
-#     """
-#
-#     must_term = [
-#         {"range": {"date": {"gte": formatted_start_date, "lte": formatted_end_date}}}
-#     ]
-#
-#     add_terms_condition(must_term, category_one_terms)
-#     add_terms_condition(must_term, category_two_terms)
-#     add_terms_condition(must_term, language_terms)
-#     add_terms_condition(must_term, country_terms)
-#
-#     if thresholds_dict:
-#         add_issues_conditions(must_term, thresholds_dict)
-#
-#     return must_term
-
-# def create_must_term(category_one_terms, category_two_terms, language_terms, country_terms, formatted_start_date,
-#                      formatted_end_date, thresholds_dict=None):
-#     must_term = [
-#         {"range": {"date": {"gte": formatted_start_date, "lte": formatted_end_date}}}
-#     ]
-#
-#     add_terms_condition(must_term, category_one_terms, 'misc.category_one.keyword')
-#     add_terms_condition(must_term, category_two_terms, 'misc.category_two.keyword')
-#     add_terms_condition(must_term, language_terms, 'language.keyword')
-#     add_terms_condition(must_term, country_terms, 'country.keyword')
-#
-#     if thresholds_dict:
-#         add_issues_conditions(must_term, thresholds_dict)
-#
-#     return must_term
 
 def create_must_term(category_one_terms, category_two_terms, language_terms, country_terms, formatted_start_date,
                      formatted_end_date, thresholds_dict=None):
