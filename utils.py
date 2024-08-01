@@ -36,33 +36,104 @@ def get_unique_category_values(index_name, field, es_config):
         return []
 
 
+@st.cache_data(ttl=3600)  # Cache for 1 hour
+def get_multiple_unique_values(index_name, fields, es_config):
+    """
+    Retrieve unique values from multiple fields in a specified Elasticsearch index.
+
+    Args:
+    index_name (str): The name of the Elasticsearch index.
+    fields (list): A list of field names to aggregate.
+    es_config (dict): Elasticsearch configuration.
+
+    Returns:
+    dict: A dictionary with field names as keys and lists of unique values as values.
+    """
+    try:
+        es = Elasticsearch(f'https://{es_config["host"]}:{es_config["port"]}', api_key=es_config["api_key"],
+                           request_timeout=300)
+
+        agg_query = {
+            "size": 0,
+            "aggs": {
+                f"unique_{field.replace('.', '_')}": {
+                    "terms": {"field": field, "size": 10000}
+                } for field in fields
+            }
+        }
+
+        response = es.search(index=index_name, body=agg_query)
+
+        result = {}
+        for field in fields:
+            agg_key = f"unique_{field.replace('.', '_')}"
+            result[field] = [bucket['key'] for bucket in response['aggregations'][agg_key]['buckets']]
+
+        return result
+    except Exception as e:
+        logging.error(f"Error retrieving unique values: {e}")
+        return {field: [] for field in fields}
+
+
+@st.cache_data(ttl=3600)
+# def populate_default_values(index_name, es_config):
+#     """
+#     Retrieves unique values for specified fields from an Elasticsearch index
+#     and appends an "Any" option to each list from the specified Elasticsearch index.
+#     """
+#     if "dem-arm" in index_name:
+#         category_level_one_values = get_unique_category_values(index_name, 'misc.category_one.keyword', es_config)
+#         category_level_two_values = get_unique_category_values(index_name, 'misc.category_two.keyword', es_config)
+#         category_level_one_values.append("Any")
+#         category_level_two_values.append("Any")
+#     elif "ru-balkans" in index_name:
+#         category_level_one_values = get_unique_category_values(index_name, 'misc.category_one.keyword', es_config)
+#         category_level_one_values.append("Any")
+#         category_level_two_values = []
+#     else:
+#         category_level_one_values = get_unique_category_values(index_name, 'category.keyword', es_config)
+#         category_level_one_values.append("Any")
+#         category_level_two_values = []
+#
+#     language_values = get_unique_category_values(index_name, 'language.keyword', es_config)
+#     country_values = get_unique_category_values(index_name, 'country.keyword', es_config)
+#
+#     language_values.append("Any")
+#     country_values.append("Any")
+#
+#     return sorted(category_level_one_values), sorted(category_level_two_values), sorted(language_values), sorted(
+#         country_values)
 def populate_default_values(index_name, es_config):
     """
     Retrieves unique values for specified fields from an Elasticsearch index
     and appends an "Any" option to each list from the specified Elasticsearch index.
     """
     if "dem-arm" in index_name:
-        category_level_one_values = get_unique_category_values(index_name, 'misc.category_one.keyword', es_config)
-        category_level_two_values = get_unique_category_values(index_name, 'misc.category_two.keyword', es_config)
-        category_level_one_values.append("Any")
-        category_level_two_values.append("Any")
+        fields = ['misc.category_one.keyword', 'misc.category_two.keyword', 'language.keyword', 'country.keyword']
     elif "ru-balkans" in index_name:
-        category_level_one_values = get_unique_category_values(index_name, 'misc.category_one.keyword', es_config)
-        category_level_one_values.append("Any")
-        category_level_two_values = []
+        fields = ['misc.category_one.keyword', 'language.keyword', 'country.keyword']
     else:
-        category_level_one_values = get_unique_category_values(index_name, 'category.keyword', es_config)
-        category_level_one_values.append("Any")
-        category_level_two_values = []
+        fields = ['category.keyword', 'language.keyword', 'country.keyword']
 
-    language_values = get_unique_category_values(index_name, 'language.keyword', es_config)
-    country_values = get_unique_category_values(index_name, 'country.keyword', es_config)
+    unique_values = get_multiple_unique_values(index_name, fields, es_config)
 
+    category_level_one_values = unique_values.get('misc.category_one.keyword',
+                                                  unique_values.get('category.keyword', []))
+    category_level_two_values = unique_values.get('misc.category_two.keyword', [])
+    language_values = unique_values.get('language.keyword', [])
+    country_values = unique_values.get('country.keyword', [])
+
+    # Append "Any" to each list
+    category_level_one_values.append("Any")
+    if category_level_two_values:
+        category_level_two_values.append("Any")
     language_values.append("Any")
     country_values.append("Any")
 
-    return sorted(category_level_one_values), sorted(category_level_two_values), sorted(language_values), sorted(
-        country_values)
+    return (sorted(category_level_one_values),
+            sorted(category_level_two_values),
+            sorted(language_values),
+            sorted(country_values))
 
 
 # index_options = [
@@ -145,19 +216,39 @@ project_indexes = {
 flat_index_list = [index for indexes in project_indexes.values() for index in indexes]
 
 
+@st.cache_data(ttl=3600)  # Cache for 1 hour
+# def get_prefixed_fields(index_, prefix, es_config):
+#     es = Elasticsearch(f'https://{es_config["host"]}:{es_config["port"]}', api_key=es_config["api_key"],
+#                        request_timeout=600)
+#     base_index = '-'.join(index_.split('-')[:2])
+#     indices = es.cat.indices(index=f"{base_index}*", h="index").split()
+#
+#     all_fields = set()
+#
+#     for index in indices:
+#         mapping = es.indices.get_mapping(index=index)
+#         fields = extract_fields(mapping[index]['mappings'], 'issues.')
+#         prefixed_fields = [field for field in fields if field.startswith(prefix)]
+#         all_fields.update(prefixed_fields)
+#
+#     return list(all_fields)
 def get_prefixed_fields(index_, prefix, es_config):
     es = Elasticsearch(f'https://{es_config["host"]}:{es_config["port"]}', api_key=es_config["api_key"],
                        request_timeout=600)
     base_index = '-'.join(index_.split('-')[:2])
-    indices = es.cat.indices(index=f"{base_index}*", h="index").split()
+
+    # Get all indices matching the base index pattern
+    indices = es.cat.indices(index=f"{base_index}*", h="index", format="json")
+    index_names = [index['index'] for index in indices]
+
+    # Get mappings for all matching indices in one request
+    mappings = es.indices.get_mapping(index=",".join(index_names))
 
     all_fields = set()
 
-    for index in indices:
-        mapping = es.indices.get_mapping(index=index)
-        fields = extract_fields(mapping[index]['mappings'], 'issues.')
-        prefixed_fields = [field for field in fields if field.startswith(prefix)]
-        all_fields.update(prefixed_fields)
+    for index, index_mapping in mappings.items():
+        fields = extract_fields(index_mapping['mappings'], prefix)
+        all_fields.update(fields)
 
     return list(all_fields)
 
@@ -189,16 +280,25 @@ def add_issues_conditions(must_list, thresholds_dict):
     })
 
 
-def extract_fields(mapping, target_prefix):
+# def extract_fields(mapping, target_prefix):
+#     fields = []
+#     if 'properties' in mapping:
+#         for field, props in mapping['properties'].items():
+#             if field == target_prefix.rstrip('.'):
+#                 sub_fields = extract_fields(props, field)
+#                 fields += [f"{field}.{sub}" for sub in sub_fields]
+#             else:
+#                 fields.append(field)
+#                 fields += extract_fields(props, "")
+#     return fields
+def extract_fields(mapping, prefix, current_path=''):
     fields = []
     if 'properties' in mapping:
         for field, props in mapping['properties'].items():
-            if field == target_prefix.rstrip('.'):
-                sub_fields = extract_fields(props, field)
-                fields += [f"{field}.{sub}" for sub in sub_fields]
-            else:
-                fields.append(field)
-                fields += extract_fields(props, "")
+            new_path = f"{current_path}.{field}" if current_path else field
+            if new_path.startswith(prefix):
+                fields.append(new_path)
+            fields.extend(extract_fields(props, prefix, new_path))
     return fields
 
 
