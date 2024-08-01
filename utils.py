@@ -108,7 +108,7 @@ def populate_default_values(index_name, es_config):
     Retrieves unique values for specified fields from an Elasticsearch index
     and appends an "Any" option to each list from the specified Elasticsearch index.
     """
-    logging.info(f"Populating for index name: {index_name}")
+    logging.info(f"Populating selectors for index name: {index_name}")
     if "dem-arm" in index_name:
         fields = ['misc.category_one.keyword', 'misc.category_two.keyword', 'language.keyword', 'country.keyword']
     elif "ru-balkans" in index_name:

@@ -1,7 +1,9 @@
 # Base
 import os
 import time
+import logging
 from datetime import datetime
+
 
 # Internal
 from authentificate import check_password
@@ -18,6 +20,8 @@ from elasticsearch import Elasticsearch, BadRequestError
 from elasticsearch.exceptions import NotFoundError
 from angle_emb import AnglE, Prompts
 
+
+logging.basicConfig(level=logging.INFO)
 
 # Init Langchain and Langsmith services
 os.environ["LANGCHAIN_TRACING_V2"] = "true"
@@ -169,6 +173,7 @@ if input_question:
                                  formatted_start_date=formatted_start_date,
                                  formatted_end_date=formatted_end_date,
                                  thresholds_dict=thresholds_dict)
+    logging.info(f"Created must term: {must_term}")
 
     if formatted_start_date and formatted_end_date:
 
