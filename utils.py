@@ -83,18 +83,18 @@ def populate_default_values(index_name, es_config):
     """
     logging.info(f"Populating selectors for index name: {index_name}")
     if "dem-arm" in index_name:
-        fields = ['misc.category_one.keyword', 'misc.category_two.keyword', 'language.keyword', 'country.keyword']
+        fields = ['misc.category_one.keyword', 'misc.category_two.keyword', 'language_text.keyword', 'country.keyword']
     elif "ru-balkans" in index_name:
-        fields = ['misc.category_one.keyword', 'language.keyword', 'country.keyword']
+        fields = ['misc.category_one.keyword', 'language_text.keyword', 'country.keyword']
     else:
-        fields = ['category.keyword', 'language.keyword', 'country.keyword']
+        fields = ['category.keyword', 'language_text.keyword', 'country.keyword']
 
     unique_values = get_multiple_unique_values(index_name, fields, es_config)
 
     category_level_one_values = unique_values.get('misc.category_one.keyword',
                                                   unique_values.get('category.keyword', []))
     category_level_two_values = unique_values.get('misc.category_two.keyword', [])
-    language_values = unique_values.get('language.keyword', [])
+    language_values = unique_values.get('language_text.keyword', [])
     country_values = unique_values.get('country.keyword', [])
 
     # Append "Any" to each list
@@ -222,7 +222,7 @@ def create_must_term(category_one_terms, category_two_terms, language_terms, cou
         logging.info("Category two terms were empty, not added to query")
 
     if language_terms:
-        add_terms_condition(must_term, language_terms, 'language.keyword')
+        add_terms_condition(must_term, language_terms, 'language_text.keyword')
     if country_terms:
         add_terms_condition(must_term, country_terms, 'country.keyword')
 
@@ -255,7 +255,7 @@ def create_dataframe_from_response(response):
                 # 'translated_text': doc['_source'].get('translated_text', ''),
                 'url': doc['_source'].get('url', ''),
                 'country': doc['_source'].get('country', ''),
-                'language': doc['_source'].get('language', ''),
+                'language': doc['_source'].get('language_text', ''),
                 'category': doc['_source'].get('category', ''),
                 'source': doc['_source'].get('source', ''),
                 '_domain': doc['_source'].get('_domain', ''),
