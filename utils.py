@@ -314,36 +314,60 @@ def populate_terms(selected_items, field):
         return [{"term": {field: item}} for item in selected_items]
 
 
-def add_terms_condition(must_list, terms):
-    """
-    Adds individual term to Elasticsearch query.
-    """
+# def add_terms_condition(must_list, terms):
+#     """
+#     Adds individual term to Elasticsearch query.
+#     """
+#     if terms:
+#         must_list.append({
+#             "bool": {
+#                 "should": terms,
+#                 "minimum_should_match": 1
+#             }
+#         })
+
+def add_terms_condition(must_list, terms, field):
     if terms:
         must_list.append({
             "bool": {
-                "should": terms,
-                "minimum_should_match": 1
+                "must": [{"term": {field: item}} for item in terms]
             }
         })
 
 
+# def create_must_term(category_one_terms, category_two_terms, language_terms, country_terms, formatted_start_date,
+#                      formatted_end_date, thresholds_dict=None):
+#     """
+#     Constructs a 'must' term for an Elasticsearch query that incorporates
+#     filters for date range, category, language, and country.
+#
+#     Each filter term is added to the 'must' term only if it is not None.
+#     """
+#
+#     must_term = [
+#         {"range": {"date": {"gte": formatted_start_date, "lte": formatted_end_date}}}
+#     ]
+#
+#     add_terms_condition(must_term, category_one_terms)
+#     add_terms_condition(must_term, category_two_terms)
+#     add_terms_condition(must_term, language_terms)
+#     add_terms_condition(must_term, country_terms)
+#
+#     if thresholds_dict:
+#         add_issues_conditions(must_term, thresholds_dict)
+#
+#     return must_term
+
 def create_must_term(category_one_terms, category_two_terms, language_terms, country_terms, formatted_start_date,
                      formatted_end_date, thresholds_dict=None):
-    """
-    Constructs a 'must' term for an Elasticsearch query that incorporates
-    filters for date range, category, language, and country.
-
-    Each filter term is added to the 'must' term only if it is not None.
-    """
-
     must_term = [
         {"range": {"date": {"gte": formatted_start_date, "lte": formatted_end_date}}}
     ]
 
-    add_terms_condition(must_term, category_one_terms)
-    add_terms_condition(must_term, category_two_terms)
-    add_terms_condition(must_term, language_terms)
-    add_terms_condition(must_term, country_terms)
+    add_terms_condition(must_term, category_one_terms, 'misc.category_one.keyword')
+    add_terms_condition(must_term, category_two_terms, 'misc.category_two.keyword')
+    add_terms_condition(must_term, language_terms, 'language.keyword')
+    add_terms_condition(must_term, country_terms, 'country.keyword')
 
     if thresholds_dict:
         add_issues_conditions(must_term, thresholds_dict)
