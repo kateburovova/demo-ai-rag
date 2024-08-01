@@ -106,14 +106,19 @@ if selected_index:
     if "dem-arm" in selected_index:
         category_terms_one = populate_terms(categories_one_selected, 'misc.category_one.keyword')
         category_terms_two = populate_terms(categories_two_selected, 'misc.category_two.keyword')
-    if "ru-balkans" in selected_index:
+    elif "ru-balkans" in selected_index:
         category_terms_one = populate_terms(categories_one_selected, 'misc.category_one.keyword')
         category_terms_two = []
     else:
         category_terms_one = populate_terms(categories_one_selected, 'category.keyword')
         category_terms_two = []
-    language_terms = populate_terms(language_values, 'language.keyword')
-    country_terms = populate_terms(country_values, 'country.keyword')
+
+    language_terms = populate_terms(languages_selected, 'language.keyword')
+    country_terms = populate_terms(countries_selected, 'country.keyword')
+
+    logging.info(f"Category terms after population: one={category_terms_one}, two={category_terms_two}")
+    logging.info(f"Language terms: {language_terms}")
+    logging.info(f"Country terms: {country_terms}")
 
     issues_fields = get_prefixed_fields(selected_index, 'issues.', es_config)
 
