@@ -100,8 +100,10 @@ if selected_index:
                 default=['Any'])
         languages_selected = st.multiselect('Select "Any" or choose one or more languages', language_values,
                                             default=['Any'])
+        logging.info(f"Selected languages: {language_values}")
         countries_selected = st.multiselect('Select "Any" or choose one or more countries', country_values,
                                             default=['Any'])
+        logging.info(f"Selected countries: {country_values}")
 
     if "dem-arm" in selected_index:
         category_terms_one = populate_terms(categories_one_selected, 'misc.category_one.keyword')
@@ -214,6 +216,10 @@ if input_question:
                                           }
                                           }
                                      )
+
+                logging.info(f"Total hits: {response['hits']['total']['value']}")
+                logging.info(
+                    f"Sample document: {response['hits']['hits'][0] if response['hits']['hits'] else 'No hits'}")
 
                 for doc in response['hits']['hits']:
                     texts_list.append((doc['_source']['translated_text'], doc['_source']['url']))
