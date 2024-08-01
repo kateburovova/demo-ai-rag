@@ -166,6 +166,7 @@ if input_question:
     selected_end_date = st.date_input("Select end date:", default_end_date)
     formatted_end_date = selected_end_date.strftime("%Y-%m-%d")
     st.write("You selected end date:", selected_end_date)
+    logging.info(f"Selected categories: one={categories_one_selected}, two={categories_two_selected}")
     must_term = create_must_term(category_terms_one,
                                  category_terms_two,
                                  language_terms,
