@@ -322,6 +322,7 @@ def populate_terms(selected_items, field):
     Returns:
         list: A list of selected terms.
     """
+    logging.info(f"Populating terms for {field}: {selected_items}")
     if (selected_items is None) or ("Any" in selected_items):
         return []
     else:
