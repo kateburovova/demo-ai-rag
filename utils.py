@@ -131,6 +131,8 @@ def populate_default_values(index_name, es_config):
     language_values.append("Any")
     country_values.append("Any")
 
+    logging.info(f"Unique values: {unique_values}")
+
     return (sorted(category_level_one_values),
             sorted(category_level_two_values),
             sorted(language_values),
