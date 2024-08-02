@@ -59,7 +59,7 @@ if search_option == 'Specific Indexes':
         st.session_state.selected_index = None
 else:
     if len(project_indexes.keys()) == 1:  # If we have only 1 project, we don't offer choice of projects
-        selected_indexes = list(project_indexes.values())
+        selected_indexes = list(project_indexes.values())[0]
         st.session_state.selected_index = ",".join(selected_indexes)
         st.write(f"We'll search in: {', '.join(selected_indexes)}")
 
