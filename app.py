@@ -130,6 +130,7 @@ if selected_index:
 
             st.session_state.language_terms = populate_terms(languages_selected, 'language_text.keyword')
             st.session_state.country_terms = populate_terms(countries_selected, 'country.keyword')
+            logging.info(f"1. Session state: {st.session_state}")
 
             logging.info(
                 f"Category terms after population: one={st.session_state.category_terms_one}, "
@@ -138,6 +139,8 @@ if selected_index:
             logging.info(f"Country terms: {st.session_state.country_terms}")
 else:
     issues_fields = None
+
+logging.info(f"2. Session state: {st.session_state}")
 
 if issues_fields:
     if st.button('Click to define issues') or st.session_state.show_issues_form:
@@ -170,12 +173,13 @@ if issues_fields:
                     if st.session_state[field] != (0.0, 0.0)
                 }
                 logging.info(f"Issue terms: {st.session_state.thresholds_dict}")
-
+    logging.info(f"3. Session state: {st.session_state}")
 
 # Create prompt vector
 input_question = None
 st.markdown('### Please enter your question')
 input_question = st.text_input("Enter your question here (phrased as if you ask a human)")
+logging.info(f"4. Session state: {st.session_state}")
 
 if input_question:
 
