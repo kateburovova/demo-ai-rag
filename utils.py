@@ -9,6 +9,8 @@ from langchain import hub, callbacks
 from langchain_openai import ChatOpenAI
 from elasticsearch import Elasticsearch, BadRequestError
 from elasticsearch.exceptions import NotFoundError
+from angle_emb import AnglE, Prompts
+
 
 logging.basicConfig(level=logging.INFO)
 
@@ -209,6 +211,20 @@ def get_texts_from_elastic(input_question, question_vector, must_term, es_config
     except Exception as e:
         st.error(f'An unknown error occurred: {str(e)}')
         return [], None
+
+
+@st.cache_resource(hash_funcs={"_thread.RLock": lambda _: None, "builtins.weakref": lambda _: None}, show_spinner=False)
+def load_model():
+    angle_model = AnglE.from_pretrained('WhereIsAI/UAE-Large-V1',
+                                        pooling_strategy='cls')
+    return angle_model
+
+
+def get_guestion_vector(input_question):
+    angle = load_model()
+    vec = angle.encode({'text': input_question}, to_numpy=True, prompt=Prompts.C)
+    question_vector = vec.tolist()[0]
+    return question_vector
 
 
 project_indexes = {

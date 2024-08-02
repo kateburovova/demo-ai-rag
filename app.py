@@ -9,7 +9,8 @@ from datetime import datetime, timedelta
 from authentificate import check_password
 from utils import (display_distribution_charts, populate_default_values, project_indexes,
                    populate_terms, create_must_term, create_dataframe_from_response, flat_index_list,
-                   get_prefixed_fields, set_state_defaults, init_llm_params, load_config, get_texts_from_elastic)
+                   get_prefixed_fields, set_state_defaults, init_llm_params, load_config, get_texts_from_elastic,
+                   get_guestion_vector)
 
 # External
 import streamlit as st
@@ -43,6 +44,7 @@ else:
     url = f'{os.environ["LANGSMITH_ACC"]}/simple-rag:9388b291'
     format_choice = 'Summary'
 prompt_template = hub.pull(url)
+
 
 search_option = st.radio(
     "Choose Specific Indexes if you want to search one or more different indexes, choose All Project Indexes to select all indexes within a project.",
@@ -183,29 +185,19 @@ if issues_fields:
     logging.info(f"3. Session state: {st.session_state}")
 
 # Create prompt vector
-input_question = None
 st.markdown('### Please enter your question')
 input_question = st.text_input("Enter your question here (phrased as if you ask a human)")
 logging.info(f"4. Session state: {st.session_state}")
 
 if input_question:
+    question_vector = get_guestion_vector(input_question)
 
-    @st.cache_resource(hash_funcs={"_thread.RLock": lambda _: None, "builtins.weakref": lambda _: None})
-    def load_model():
-        angle_model = AnglE.from_pretrained('WhereIsAI/UAE-Large-V1',
-                                            pooling_strategy='cls')
-        return angle_model
-
-
-    # Create question embedding
-    angle = load_model()
-    vec = angle.encode({'text': input_question}, to_numpy=True, prompt=Prompts.C)
-    question_vector = vec.tolist()[0]
     logging.info(
         f"Selected categories: one={st.session_state.category_terms_one}, two={st.session_state.category_terms_two}")
     logging.info(f"Selected languages: {st.session_state.language_terms}")
     logging.info(f"Selected countries: {st.session_state.country_terms}")
     logging.info(f"Issue terms after question definition: {st.session_state.thresholds_dict}")
+
     if st.session_state.formatted_start_date and st.session_state.formatted_end_date:
         must_term = create_must_term(st.session_state.category_terms_one,
                                      st.session_state.category_terms_two,
@@ -220,41 +212,6 @@ if input_question:
         if st.button('RUN SEARCH', type="primary"):
             start_time = time.time()
             max_doc_num = 30
-            # try:
-            #     texts_list = []
-            #     st.write(f'Running search for {max_doc_num} relevant posts for question: {input_question}')
-            #     try:
-            #         es = Elasticsearch(f'https://{es_config["host"]}:{es_config["port"]}', api_key=es_config["api_key"],
-            #                            request_timeout=600)
-            #     except Exception as e:
-            #         st.error(f'Failed to connect to Elasticsearch: {str(e)}')
-            #
-            #     response = es.search(index=st.session_state.selected_index,
-            #                          size=max_doc_num,
-            #                          knn={"field": "embeddings.WhereIsAI/UAE-Large-V1",
-            #                               "query_vector": question_vector,
-            #                               "k": max_doc_num,
-            #                               "num_candidates": 10000,
-            #                               "filter": {
-            #                                   "bool": {
-            #                                       "must": must_term,
-            #                                       "must_not": [{"term": {"type": "comment"}}]
-            #                                   }
-            #                               }
-            #                               }
-            #                          )
-            #
-            #     logging.info(f"Total hits: {response['hits']['total']['value']}")
-            #     logging.info(
-            #         f"Sample document: {response['hits']['hits'][0] if response['hits']['hits'] else 'No hits'}")
-            #
-            #     for doc in response['hits']['hits']:
-            #         texts_list.append((doc['_source']['translated_text'], doc['_source']['url']))
-            #
-            #     st.write("Searching for documents, please wait...")
-                # Format urls so they work properly within streamlit
-                # corrected_texts_list = [(text, 'https://' + url if not url.startswith('http://') and not url.startswith(
-                #     'https://') else url) for text, url in texts_list]
             corrected_texts_list, response = get_texts_from_elastic(input_question=input_question,
                                                           question_vector=question_vector,
                                                           must_term=must_term,
@@ -287,11 +244,5 @@ if input_question:
             tally_form_url = f'https://tally.so/embed/wzq1Aa?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1&run_id={run_id}&time={execution_time}'
             components.iframe(tally_form_url, width=700, height=800, scrolling=True)
 
-            # except BadRequestError as e:
-            #     st.error(f'Failed to execute search (embeddings might be missing for this index): {e.info}')
-            # except NotFoundError as e:
-            #     st.error(f'Index not found: {e.info}')
-            # except Exception as e:
-            #     st.error(f'An unknown error occurred: {str(e)}')
     if st.button('RE-RUN APP'):
         time.sleep(1)
