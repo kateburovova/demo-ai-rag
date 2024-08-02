@@ -73,7 +73,7 @@ def get_unique_category_values(index_name, field, es_config):
         return []
 
 
-@st.cache_data(ttl=3600)  # Cache for 1 hour
+@st.cache_data(ttl=3600, show_spinner=False)  # Cache for 1 hour
 def get_multiple_unique_values(index_name, fields, es_config):
     """
     Retrieve unique values from multiple fields in a specified Elasticsearch index.
@@ -112,7 +112,7 @@ def get_multiple_unique_values(index_name, fields, es_config):
         return {field: [] for field in fields}
 
 
-@st.cache_data(ttl=3600)
+@st.cache_data(ttl=3600, show_spinner=False)
 def populate_default_values(index_name, es_config):
     """
     Retrieves unique values for specified fields from an Elasticsearch index
@@ -160,7 +160,7 @@ project_indexes = {
 flat_index_list = [index for indexes in project_indexes.values() for index in indexes]
 
 
-@st.cache_data(ttl=3600)  # Cache for 1 hour
+@st.cache_data(ttl=3600, show_spinner=False)  # Cache for 1 hour
 def get_prefixed_fields(index_, prefix, es_config):
     es = Elasticsearch(f'https://{es_config["host"]}:{es_config["port"]}', api_key=es_config["api_key"],
                        request_timeout=600)
