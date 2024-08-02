@@ -36,7 +36,7 @@ def get_unique_category_values(index_name, field, es_config):
         return []
 
 
-@st.cache_resource(ttl=3600)  # Cache for 1 hour
+@st.cache_data(ttl=3600)  # Cache for 1 hour
 def get_multiple_unique_values(index_name, fields, es_config):
     """
     Retrieve unique values from multiple fields in a specified Elasticsearch index.
@@ -75,7 +75,7 @@ def get_multiple_unique_values(index_name, fields, es_config):
         return {field: [] for field in fields}
 
 
-@st.cache_resource(ttl=3600)
+@st.cache_data(ttl=3600)
 def populate_default_values(index_name, es_config):
     """
     Retrieves unique values for specified fields from an Elasticsearch index

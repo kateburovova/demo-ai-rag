@@ -47,6 +47,8 @@ thresholds_dict = None
 country_terms = None
 
 ########## APP start ###########
+if not check_password():
+    st.stop()
 st.set_page_config(layout="wide")
 
 # Get input parameters
@@ -195,11 +197,12 @@ if input_question:
                                  thresholds_dict=thresholds_dict)
     logging.info(f"Created must term: {must_term}")
 
-    if formatted_start_date and formatted_end_date:
+    # if formatted_start_date and formatted_end_date:
+    if must_term:
 
-        # Authorise user
-        if not check_password():
-            st.stop()
+        # # Authorise user
+        # if not check_password():
+        #     st.stop()
 
         # Run search
         if st.button('RUN SEARCH'):
