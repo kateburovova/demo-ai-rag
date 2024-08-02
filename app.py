@@ -5,12 +5,11 @@ import logging
 from datetime import datetime, timedelta
 
 
-
 # Internal
 from authentificate import check_password
 from utils import (display_distribution_charts, populate_default_values, project_indexes,
                    populate_terms, create_must_term, create_dataframe_from_response, flat_index_list,
-                   get_prefixed_fields,set_state_defaults)
+                   get_prefixed_fields, set_state_defaults, init_llm_params)
 
 # External
 import streamlit as st
@@ -24,40 +23,14 @@ from angle_emb import AnglE, Prompts
 
 logging.basicConfig(level=logging.INFO)
 
-# Init Langchain and Langsmith services
-os.environ["LANGCHAIN_TRACING_V2"] = "true"
-os.environ["LANGCHAIN_PROJECT"] = f"rag_app : summarization : production"
-os.environ["LANGCHAIN_ENDPOINT"] = "https://api.smith.langchain.com"
-os.environ["LANGCHAIN_API_KEY"] = st.secrets['ld_rag']['LANGCHAIN_API_KEY']
-os.environ["LANGSMITH_ACC"] = st.secrets['ld_rag']['LANGSMITH_ACC']
-
-# Init openai model
-OPENAI_API_KEY = st.secrets['ld_rag']['OPENAI_KEY_ORG']
-llm_chat = ChatOpenAI(temperature=0.0, openai_api_key=OPENAI_API_KEY,
-                      model_name='gpt-4-1106-preview')
-
 es_config = {
     'host': st.secrets['ld_rag']['ELASTIC_HOST'],
     'port': st.secrets['ld_rag']['ELASTIC_PORT'],
     'api_key': st.secrets['ld_rag']['ELASTIC_API']
 }
 
+llm_chat = init_llm_params()
 set_state_defaults()
-# must_term = None
-# issues_fields = None
-#
-# if 'thresholds_dict' not in st.session_state:
-#     st.session_state.thresholds_dict = {}
-# if 'show_issues_form' not in st.session_state:
-#     st.session_state.show_issues_form = False
-# if 'category_terms_one' not in st.session_state:
-#     st.session_state.category_terms_one = None
-# if 'category_terms_two' not in st.session_state:
-#     st.session_state.category_terms_two = None
-# if 'language_terms' not in st.session_state:
-#     st.session_state.language_terms = None
-# if 'country_terms' not in st.session_state:
-#     st.session_state.country_terms = None
 
 ########## APP start ###########
 st.set_page_config(layout="wide")
@@ -79,7 +52,7 @@ prompt_template = hub.pull(url)
 selected_index = None
 search_option = st.radio(
     "Choose Specific Indexes if you want to search one or more different indexes, choose All Project Indexes to select all indexes within a project.",
-    ['Specific Indexes', 'All Project Indexes'])
+    ['All Project Indexes', 'Specific Indexes'])
 
 if search_option == 'Specific Indexes':
     selected_indexes = st.multiselect('Please choose one or more indexes', flat_index_list, default=None,
@@ -111,18 +84,11 @@ if selected_index:
         default_start_date = datetime(2024, 7, 15)
         default_end_date = datetime(2024, 7, 30)
 
-        # Get input dates
-        # selected_start_date = st.date_input("Select start date:", default_start_date)
-        # formatted_start_date = selected_start_date.strftime("%Y-%m-%d")
-        # st.write("You selected start date:", selected_start_date)
-        # selected_end_date = st.date_input("Select end date:", default_end_date)
-        # formatted_end_date = selected_end_date.strftime("%Y-%m-%d")
-        # st.write("You selected end date:", selected_end_date)
         date_range = st.date_input(
             "Select date range",
             value=(default_start_date, default_end_date),
-            min_value=datetime(2020, 1, 1),  # Adjust this to your needs
-            max_value=datetime.now() + timedelta(days=365),  # Allow selection up to one year in the future
+            min_value=datetime(2020, 1, 1),
+            max_value=datetime.now() + timedelta(days=365),
         )
 
         if len(date_range) == 2:
@@ -149,19 +115,7 @@ if selected_index:
         logging.info(f"Selected countries: {country_values}")
 
         submitted = st.form_submit_button("Submit")
-        # if submitted:
-        #     if "dem-arm" in selected_index:
-        #         category_terms_one = populate_terms(categories_one_selected, 'misc.category_one.keyword')
-        #         category_terms_two = populate_terms(categories_two_selected, 'misc.category_two.keyword')
-        #     elif "ru-balkans" in selected_index:
-        #         category_terms_one = populate_terms(categories_one_selected, 'misc.category_one.keyword')
-        #         category_terms_two = []
-        #     else:
-        #         category_terms_one = populate_terms(categories_one_selected, 'category.keyword')
-        #         category_terms_two = []
-        #
-        #     language_terms = populate_terms(languages_selected, 'language_text.keyword')
-        #     country_terms = populate_terms(countries_selected, 'country.keyword')
+
         if submitted:
             if "dem-arm" in selected_index:
                 st.session_state.category_terms_one = populate_terms(categories_one_selected,
@@ -186,26 +140,6 @@ if selected_index:
             logging.info(f"Country terms: {st.session_state.country_terms}")
 else:
     issues_fields = None
-
-# if issues_fields:
-#     if st.button('Click to define issues'):
-#         with st.form("Tap to define additional filtering by issue"):
-#             st.markdown("Edit at least one of the following thresholds to start filtering. "
-#                         "Any number of thresholds can be set simultaneously. "
-#                         "Editing several thresholds will result in filtering by at least one match to any of them (not all together).")
-#             thresholds_dict = {}
-#             for field in issues_fields:
-#                 min_value, max_value = st.slider(
-#                     f"Threshold range for {field}",
-#                     min_value=0.0,  # Set an appropriate minimum value
-#                     max_value=1.0,  # Set an appropriate maximum value
-#                     value=(0.0, 0.0),  # Default slider range
-#                     step=0.05  # Slider step increment
-#                 )
-#             submitted_issues = st.form_submit_button("Submit issues")
-#             if submitted_issues:
-#                 if (min_value, max_value) != (0.0, 0.0):
-#                         thresholds_dict[field] = f"{min_value}:{max_value}"
 
 if issues_fields:
     if st.button('Click to define issues') or st.session_state.show_issues_form:
@@ -238,7 +172,6 @@ if issues_fields:
                     if st.session_state[field] != (0.0, 0.0)
                 }
                 logging.info(f"Issue terms: {st.session_state.thresholds_dict}")
-                # thresholds_dict = st.session_state.thresholds_dict
 
 
 # Create prompt vector

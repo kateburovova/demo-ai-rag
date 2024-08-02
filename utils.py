@@ -2,10 +2,27 @@ import pandas as pd
 import streamlit as st
 import plotly.express as px
 import logging
+import os
 
 from elasticsearch import Elasticsearch
+from langchain import hub, callbacks
+from langchain_openai import ChatOpenAI
 
 logging.basicConfig(level=logging.INFO)
+
+def init_llm_params():
+    # Init Langchain and Langsmith services
+    os.environ["LANGCHAIN_TRACING_V2"] = "true"
+    os.environ["LANGCHAIN_PROJECT"] = f"rag_app : summarization : production"
+    os.environ["LANGCHAIN_ENDPOINT"] = "https://api.smith.langchain.com"
+    os.environ["LANGCHAIN_API_KEY"] = st.secrets['ld_rag']['LANGCHAIN_API_KEY']
+    os.environ["LANGSMITH_ACC"] = st.secrets['ld_rag']['LANGSMITH_ACC']
+
+    # Init openai model
+    OPENAI_API_KEY = st.secrets['ld_rag']['OPENAI_KEY_ORG']
+    llm_chat = ChatOpenAI(temperature=0.0, openai_api_key=OPENAI_API_KEY,
+                          model_name='gpt-4-1106-preview')
+    return llm_chat
 
 def set_state_defaults():
     must_term = None
