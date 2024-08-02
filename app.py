@@ -238,7 +238,8 @@ if issues_fields:
                     for field in issues_fields
                     if st.session_state[field] != (0.0, 0.0)
                 }
-                thresholds_dict=st.session_state.thresholds_dict
+                logging.info(f"Issue terms: {st.session_state.thresholds_dict}")
+                thresholds_dict = st.session_state.thresholds_dict
 
 
 # Create prompt vector
