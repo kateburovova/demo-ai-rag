@@ -115,7 +115,7 @@ if selected_index:
         if len(date_range) == 2:
             selected_start_date, selected_end_date = date_range
         else:
-            st.error("Please select both start and end dates.")
+            # st.error("Please select both start and end dates.")
             selected_start_date = selected_end_date = None
 
         categories_one_selected = st.multiselect(
