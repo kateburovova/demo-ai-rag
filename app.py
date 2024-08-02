@@ -47,9 +47,9 @@ thresholds_dict = None
 country_terms = None
 
 ########## APP start ###########
+st.set_page_config(layout="wide")
 if not check_password():
     st.stop()
-st.set_page_config(layout="wide")
 
 # Get input parameters
 st.markdown('### Please select search parameters 🔎')
@@ -188,14 +188,15 @@ if input_question:
     # formatted_end_date = selected_end_date.strftime("%Y-%m-%d")
     # st.write("You selected end date:", selected_end_date)
     logging.info(f"Selected categories: one={categories_one_selected}, two={categories_two_selected}")
-    must_term = create_must_term(category_terms_one,
-                                 category_terms_two,
-                                 language_terms,
-                                 country_terms,
-                                 formatted_start_date=formatted_start_date,
-                                 formatted_end_date=formatted_end_date,
-                                 thresholds_dict=thresholds_dict)
-    logging.info(f"Created must term: {must_term}")
+    if formatted_start_date and formatted_end_date:
+        must_term = create_must_term(category_terms_one,
+                                     category_terms_two,
+                                     language_terms,
+                                     country_terms,
+                                     formatted_start_date=formatted_start_date,
+                                     formatted_end_date=formatted_end_date,
+                                     thresholds_dict=thresholds_dict)
+        logging.info(f"Created must term: {must_term}")
 
     # if formatted_start_date and formatted_end_date:
     if must_term:
