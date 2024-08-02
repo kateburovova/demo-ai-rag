@@ -46,6 +46,7 @@ language_terms = None
 category_terms_two = None
 thresholds_dict = None
 country_terms = None
+must_term = None
 
 ########## APP start ###########
 st.set_page_config(layout="wide")
@@ -114,6 +115,9 @@ if selected_index:
 
         if len(date_range) == 2:
             selected_start_date, selected_end_date = date_range
+            formatted_start_date = selected_start_date.strftime("%Y-%m-%d")
+            formatted_end_date = selected_end_date.strftime("%Y-%m-%d")
+
         else:
             # st.error("Please select both start and end dates.")
             selected_start_date = selected_end_date = None
