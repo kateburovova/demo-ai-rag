@@ -57,7 +57,7 @@ if not check_password():
 st.markdown('### Please select search parameters 🔎')
 
 # Get format and pull relevant prompt
-format_choice = st.radio("Choose the preferred output format:", ['Summary', 'Informational Event'], index=None)
+format_choice = st.radio("Choose the preferred output format:", ['Summary', 'Informational Event'])
 if format_choice == 'Informational Event':
     url = f'{os.environ["LANGSMITH_ACC"]}/simple-rag'
 else:
