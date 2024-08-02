@@ -10,6 +10,14 @@ from langchain_openai import ChatOpenAI
 
 logging.basicConfig(level=logging.INFO)
 
+def load_config():
+    es_config = {
+        'host': st.secrets['ld_rag']['ELASTIC_HOST'],
+        'port': st.secrets['ld_rag']['ELASTIC_PORT'],
+        'api_key': st.secrets['ld_rag']['ELASTIC_API']
+    }
+    return es_config
+
 def init_llm_params():
     # Init Langchain and Langsmith services
     os.environ["LANGCHAIN_TRACING_V2"] = "true"
@@ -43,7 +51,7 @@ def set_state_defaults():
         st.session_state.language_terms = None
     if 'country_terms' not in st.session_state:
         st.session_state.country_terms = None
-
+    st.session_state.use_base_category = False
 
 def get_unique_category_values(index_name, field, es_config):
     """
@@ -258,8 +266,12 @@ def create_must_term(category_one_terms, category_two_terms, language_terms, cou
     ]
 
     if category_one_terms:
-        add_terms_condition(must_term, category_one_terms, 'misc.category_one.keyword')
-        logging.info(f"After adding category one: {must_term}")
+        if st.session_state.use_base_category:
+            add_terms_condition(must_term, category_one_terms, 'category.keyword')
+            logging.info(f"Using base category. After adding category: {must_term}")
+        else:
+            add_terms_condition(must_term, category_one_terms, 'misc.category_one.keyword')
+            logging.info(f"After adding category one: {must_term}")
 
     if category_two_terms:
         add_terms_condition(must_term, category_two_terms, 'misc.category_two.keyword')

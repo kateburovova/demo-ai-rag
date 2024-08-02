@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 from authentificate import check_password
 from utils import (display_distribution_charts, populate_default_values, project_indexes,
                    populate_terms, create_must_term, create_dataframe_from_response, flat_index_list,
-                   get_prefixed_fields, set_state_defaults, init_llm_params)
+                   get_prefixed_fields, set_state_defaults, init_llm_params, load_config)
 
 # External
 import streamlit as st
@@ -23,12 +23,7 @@ from angle_emb import AnglE, Prompts
 
 logging.basicConfig(level=logging.INFO)
 
-es_config = {
-    'host': st.secrets['ld_rag']['ELASTIC_HOST'],
-    'port': st.secrets['ld_rag']['ELASTIC_PORT'],
-    'api_key': st.secrets['ld_rag']['ELASTIC_API']
-}
-
+es_config = load_config()
 llm_chat = init_llm_params()
 set_state_defaults()
 
@@ -41,8 +36,8 @@ if not check_password():
 st.markdown('### Please select search parameters 🔎')
 
 # Get format and pull relevant prompt
-format_choice = st.radio("Choose the preferred output format:", ['Summary', 'Informational Event'])
-if format_choice == 'Informational Event':
+format_choice = st.radio("Choose the preferred output format:", ['Summary', 'Alert'])
+if format_choice == 'Alert':
     url = f'{os.environ["LANGSMITH_ACC"]}/simple-rag'
 else:
     url = f'{os.environ["LANGSMITH_ACC"]}/simple-rag:9388b291'
@@ -127,6 +122,7 @@ if selected_index:
                 st.session_state.category_terms_two = []
             else:
                 st.session_state.category_terms_one = populate_terms(categories_one_selected, 'category.keyword')
+                st.session_state.use_base_category = True
                 st.session_state.category_terms_two = []
 
             st.session_state.language_terms = populate_terms(languages_selected, 'language_text.keyword')
