@@ -89,6 +89,7 @@ else:
 if selected_index:
     category_values_one, category_values_two, language_values, country_values = populate_default_values(selected_index,
                                                                                                         es_config)
+    issues_fields = get_prefixed_fields(selected_index, 'issues.', es_config)
 
     with st.form("Tap to refine filters"):
         st.markdown("Hihi 👋")
@@ -155,7 +156,7 @@ if selected_index:
             logging.info(f"Language terms: {language_terms}")
             logging.info(f"Country terms: {country_terms}")
 
-            issues_fields = get_prefixed_fields(selected_index, 'issues.', es_config)
+
 
 
     with st.popover("Tap to define additional filtering by issue"):
