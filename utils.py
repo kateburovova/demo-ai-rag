@@ -377,20 +377,14 @@ def create_dataframe_from_response(response):
             return pd.DataFrame()  # Return an empty DataFrame
 
         for doc in response['hits']['hits']:
-            misc_dict = doc['_source'].get('misc', {})
-
             selected_doc = {
                 'date': doc['_source'].get('date', ''),
                 'text': doc['_source'].get('text', ''),
                 # 'translated_text': doc['_source'].get('translated_text', ''),
                 'url': doc['_source'].get('url', ''),
-                'country': doc['_source'].get('country', ''),
-                'language': doc['_source'].get('language_text', ''),
-                'category': doc['_source'].get('category', ''),
-                'source': doc['_source'].get('source', ''),
-                '_domain': doc['_source'].get('_domain', ''),
-                'category_one': misc_dict.get('category_one', ''),
-                'category_two': misc_dict.get('category_two', ''),
+                'country': doc['_source'].get('country', 'None'),
+                'language': doc['_source'].get('language', 'None'),
+                'category': doc['_source'].get('category', 'None'),
                 'id': doc.get('_id', '')
             }
             selected_documents.append(selected_doc)
@@ -405,7 +399,6 @@ def create_dataframe_from_response(response):
     except Exception as e:
         print(f"An error occurred: {e}")
         return pd.DataFrame()
-
 
 def display_distribution_charts(df, selected_index):
     """
