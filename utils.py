@@ -33,8 +33,6 @@ def init_llm_params():
     return llm_chat
 
 def set_state_defaults():
-    must_term = None
-    issues_fields = None
     if 'formatted_start_date' not in st.session_state:
         st.session_state.formatted_start_date = None
     if 'formatted_end_date' not in st.session_state:

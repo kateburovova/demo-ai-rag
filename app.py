@@ -44,7 +44,6 @@ else:
     format_choice = 'Summary'
 prompt_template = hub.pull(url)
 
-selected_index = None
 search_option = st.radio(
     "Choose Specific Indexes if you want to search one or more different indexes, choose All Project Indexes to select all indexes within a project.",
     ['All Project Indexes', 'Specific Indexes'])
@@ -58,12 +57,18 @@ if search_option == 'Specific Indexes':
     else:
         selected_index = None
 else:
-    project_choice = st.selectbox('Please choose a project', list(project_indexes.keys()), index=None,
-                                  placeholder="Select project")
-    if project_choice:
-        selected_indexes = project_indexes[project_choice]
+    if len(project_indexes.keys()) == 1:  # If we have only 1 project, we don't offer choice of projects
+        selected_indexes = list(project_indexes.values())
         selected_index = ",".join(selected_indexes)
         st.write(f"We'll search in: {', '.join(selected_indexes)}")
+
+    else:
+        project_choice = st.selectbox('Please choose a project', list(project_indexes.keys()), index=None,
+                                      placeholder="Select project")
+        if project_choice:
+            selected_indexes = project_indexes[project_choice]
+            selected_index = ",".join(selected_indexes)
+            st.write(f"We'll search in: {', '.join(selected_indexes)}")
 
 if selected_index:
     category_values_one, category_values_two, language_values, country_values = populate_default_values(selected_index,
