@@ -90,7 +90,7 @@ if selected_index:
     category_values_one, category_values_two, language_values, country_values = populate_default_values(selected_index,
                                                                                                         es_config)
 
-    with st.popover("Tap to refine filters"):
+    with st.form("Tap to refine filters"):
         st.markdown("Hihi 👋")
         st.markdown(
             "If Any remains selected or no values at all, filtering will not be applied to this field. Start typing "
@@ -136,24 +136,27 @@ if selected_index:
                                             default=['Any'])
         logging.info(f"Selected countries: {country_values}")
 
-    if "dem-arm" in selected_index:
-        category_terms_one = populate_terms(categories_one_selected, 'misc.category_one.keyword')
-        category_terms_two = populate_terms(categories_two_selected, 'misc.category_two.keyword')
-    elif "ru-balkans" in selected_index:
-        category_terms_one = populate_terms(categories_one_selected, 'misc.category_one.keyword')
-        category_terms_two = []
-    else:
-        category_terms_one = populate_terms(categories_one_selected, 'category.keyword')
-        category_terms_two = []
+    submitted = st.form_submit_button("Submit")
+    if submitted:
+        if "dem-arm" in selected_index:
+            category_terms_one = populate_terms(categories_one_selected, 'misc.category_one.keyword')
+            category_terms_two = populate_terms(categories_two_selected, 'misc.category_two.keyword')
+        elif "ru-balkans" in selected_index:
+            category_terms_one = populate_terms(categories_one_selected, 'misc.category_one.keyword')
+            category_terms_two = []
+        else:
+            category_terms_one = populate_terms(categories_one_selected, 'category.keyword')
+            category_terms_two = []
 
-    language_terms = populate_terms(languages_selected, 'language_text.keyword')
-    country_terms = populate_terms(countries_selected, 'country.keyword')
+        language_terms = populate_terms(languages_selected, 'language_text.keyword')
+        country_terms = populate_terms(countries_selected, 'country.keyword')
 
-    logging.info(f"Category terms after population: one={category_terms_one}, two={category_terms_two}")
-    logging.info(f"Language terms: {language_terms}")
-    logging.info(f"Country terms: {country_terms}")
+        logging.info(f"Category terms after population: one={category_terms_one}, two={category_terms_two}")
+        logging.info(f"Language terms: {language_terms}")
+        logging.info(f"Country terms: {country_terms}")
 
-    issues_fields = get_prefixed_fields(selected_index, 'issues.', es_config)
+        issues_fields = get_prefixed_fields(selected_index, 'issues.', es_config)
+
 
     with st.popover("Tap to define additional filtering by issue"):
         st.markdown("Edit at least one of the following thresholds to start filtering. "
