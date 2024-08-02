@@ -85,6 +85,20 @@ if st.session_state.selected_index:
 
         default_start_date = datetime(2024, 7, 15)
         default_end_date = datetime(2024, 7, 30)
+        default_non_null_categories_one = [category for category in category_values_one
+                                           if category not in ['Any', None]]
+
+        if "dem-arm" or "ru-balkans" in st.session_state.selected_index:
+            st.session_state.use_base_category = False
+        else:
+            st.session_state.use_base_category = True
+
+        if st.session_state.compare_categories and st.session_state.use_base_category:
+            st.session_state.category_terms_one = populate_terms(default_non_null_categories_one,
+                                                                 'category.keyword')
+        elif st.session_state.compare_categories and not st.session_state.use_base_category:
+            st.session_state.category_terms_one = populate_terms(default_non_null_categories_one,
+                                                                 'misc.category_one.keyword')
 
         date_range = st.date_input(
             "Select date range",
@@ -104,7 +118,7 @@ if st.session_state.selected_index:
         if st.session_state.compare_categories:
             categories_one_selected = st.multiselect(
                 'Select "Any" or choose one or more categories of the first (or only) level', category_values_one,
-                default=[category for category in category_values_one if category not in ['Any', None]])
+                default=default_non_null_categories_one)
         else:
             categories_one_selected = st.multiselect(
                 'Select "Any" or choose one or more categories of the first (or only) level', category_values_one,
@@ -128,15 +142,12 @@ if st.session_state.selected_index:
                                                                      'misc.category_one.keyword')
                 st.session_state.category_terms_two = populate_terms(categories_two_selected,
                                                                      'misc.category_two.keyword')
-                st.session_state.use_base_category = False
             elif "ru-balkans" in st.session_state.selected_index:
                 st.session_state.category_terms_one = populate_terms(categories_one_selected,
                                                                      'misc.category_one.keyword')
                 st.session_state.category_terms_two = []
-                st.session_state.use_base_category = False
             else:
                 st.session_state.category_terms_one = populate_terms(categories_one_selected, 'category.keyword')
-                st.session_state.use_base_category = True
                 logging.info(f"Base category use: {st.session_state.use_base_category}")
                 st.session_state.category_terms_two = []
 
