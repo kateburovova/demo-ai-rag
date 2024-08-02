@@ -2,7 +2,8 @@
 import os
 import time
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
+
 
 
 # Internal
@@ -98,12 +99,24 @@ if selected_index:
         default_end_date = datetime(2024, 7, 30)
 
         # Get input dates
-        selected_start_date = st.date_input("Select start date:", default_start_date)
-        formatted_start_date = selected_start_date.strftime("%Y-%m-%d")
-        st.write("You selected start date:", selected_start_date)
-        selected_end_date = st.date_input("Select end date:", default_end_date)
-        formatted_end_date = selected_end_date.strftime("%Y-%m-%d")
-        st.write("You selected end date:", selected_end_date)
+        # selected_start_date = st.date_input("Select start date:", default_start_date)
+        # formatted_start_date = selected_start_date.strftime("%Y-%m-%d")
+        # st.write("You selected start date:", selected_start_date)
+        # selected_end_date = st.date_input("Select end date:", default_end_date)
+        # formatted_end_date = selected_end_date.strftime("%Y-%m-%d")
+        # st.write("You selected end date:", selected_end_date)
+        date_range = st.date_input(
+            "Select date range",
+            value=(default_start_date, default_end_date),
+            min_value=datetime(2020, 1, 1),  # Adjust this to your needs
+            max_value=datetime.now() + timedelta(days=365),  # Allow selection up to one year in the future
+        )
+
+        if len(date_range) == 2:
+            selected_start_date, selected_end_date = date_range
+        else:
+            st.error("Please select both start and end dates.")
+            selected_start_date = selected_end_date = None
 
         categories_one_selected = st.multiselect(
             'Select "Any" or choose one or more categories of the first (or only) level', category_values_one,
