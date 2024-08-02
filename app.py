@@ -123,6 +123,7 @@ if selected_index:
             else:
                 st.session_state.category_terms_one = populate_terms(categories_one_selected, 'category.keyword')
                 st.session_state.use_base_category = True
+                logging.info(f"Base category use: {st.session_state.use_base_category}")
                 st.session_state.category_terms_two = []
 
             st.session_state.language_terms = populate_terms(languages_selected, 'language_text.keyword')
