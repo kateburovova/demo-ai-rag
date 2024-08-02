@@ -159,12 +159,12 @@ def populate_default_values(index_name, es_config):
 
 
 project_indexes = {
-    'dem-arm': [
-        'dem-arm-facebook',
-        'dem-arm-telegram',
-        'dem-arm-web',
-        'dem-arm-youtube'
-    ],
+    # 'dem-arm': [
+    #     'dem-arm-facebook',
+    #     'dem-arm-telegram',
+    #     'dem-arm-web',
+    #     'dem-arm-youtube'
+    # ],
     'dem-by': [
         'dem-by-telegram',
         'dem-by-youtube',
