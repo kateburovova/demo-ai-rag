@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 from authentificate import check_password
 from utils import (display_distribution_charts, populate_default_values, project_indexes,
                    populate_terms, create_must_term, create_dataframe_from_response, flat_index_list,
-                   get_prefixed_fields, set_state_defaults, init_llm_params, load_config)
+                   get_prefixed_fields, set_state_defaults, init_llm_params, load_config, get_texts_from_elastic)
 
 # External
 import streamlit as st
@@ -220,74 +220,78 @@ if input_question:
         if st.button('RUN SEARCH', type="primary"):
             start_time = time.time()
             max_doc_num = 30
-            try:
-                texts_list = []
-                st.write(f'Running search for {max_doc_num} relevant posts for question: {input_question}')
-                try:
-                    es = Elasticsearch(f'https://{es_config["host"]}:{es_config["port"]}', api_key=es_config["api_key"],
-                                       request_timeout=600)
-                except Exception as e:
-                    st.error(f'Failed to connect to Elasticsearch: {str(e)}')
-
-                response = es.search(index=st.session_state.selected_index,
-                                     size=max_doc_num,
-                                     knn={"field": "embeddings.WhereIsAI/UAE-Large-V1",
-                                          "query_vector": question_vector,
-                                          "k": max_doc_num,
-                                          "num_candidates": 10000,
-                                          "filter": {
-                                              "bool": {
-                                                  "must": must_term,
-                                                  "must_not": [{"term": {"type": "comment"}}]
-                                              }
-                                          }
-                                          }
-                                     )
-
-                logging.info(f"Total hits: {response['hits']['total']['value']}")
-                logging.info(
-                    f"Sample document: {response['hits']['hits'][0] if response['hits']['hits'] else 'No hits'}")
-
-                for doc in response['hits']['hits']:
-                    texts_list.append((doc['_source']['translated_text'], doc['_source']['url']))
-
-                st.write("Searching for documents, please wait...")
-
+            # try:
+            #     texts_list = []
+            #     st.write(f'Running search for {max_doc_num} relevant posts for question: {input_question}')
+            #     try:
+            #         es = Elasticsearch(f'https://{es_config["host"]}:{es_config["port"]}', api_key=es_config["api_key"],
+            #                            request_timeout=600)
+            #     except Exception as e:
+            #         st.error(f'Failed to connect to Elasticsearch: {str(e)}')
+            #
+            #     response = es.search(index=st.session_state.selected_index,
+            #                          size=max_doc_num,
+            #                          knn={"field": "embeddings.WhereIsAI/UAE-Large-V1",
+            #                               "query_vector": question_vector,
+            #                               "k": max_doc_num,
+            #                               "num_candidates": 10000,
+            #                               "filter": {
+            #                                   "bool": {
+            #                                       "must": must_term,
+            #                                       "must_not": [{"term": {"type": "comment"}}]
+            #                                   }
+            #                               }
+            #                               }
+            #                          )
+            #
+            #     logging.info(f"Total hits: {response['hits']['total']['value']}")
+            #     logging.info(
+            #         f"Sample document: {response['hits']['hits'][0] if response['hits']['hits'] else 'No hits'}")
+            #
+            #     for doc in response['hits']['hits']:
+            #         texts_list.append((doc['_source']['translated_text'], doc['_source']['url']))
+            #
+            #     st.write("Searching for documents, please wait...")
                 # Format urls so they work properly within streamlit
-                corrected_texts_list = [(text, 'https://' + url if not url.startswith('http://') and not url.startswith(
-                    'https://') else url) for text, url in texts_list]
+                # corrected_texts_list = [(text, 'https://' + url if not url.startswith('http://') and not url.startswith(
+                #     'https://') else url) for text, url in texts_list]
+            corrected_texts_list, response = get_texts_from_elastic(input_question=input_question,
+                                                          question_vector=question_vector,
+                                                          must_term=st.session_state.must_term,
+                                                          es_config=es_config,
+                                                          max_doc_num=max_doc_num)
 
-                # Get summary for the retrieved data
-                customer_messages = prompt_template.format_messages(
-                    question=input_question,
-                    texts=corrected_texts_list)
+            # Get summary for the retrieved data
+            customer_messages = prompt_template.format_messages(
+                question=input_question,
+                texts=corrected_texts_list)
 
-                st.markdown(f'### This is {format_choice}, generated by GPT:')
+            st.markdown(f'### This is {format_choice}, generated by GPT:')
 
-                with callbacks.collect_runs() as cb:
-                    st.write_stream(llm_chat.stream(customer_messages))
-                    run_id = cb.traced_runs[0].id
+            with callbacks.collect_runs() as cb:
+                st.write_stream(llm_chat.stream(customer_messages))
+                run_id = cb.traced_runs[0].id
 
-                # st.markdown(content)
-                st.write('******************')
-                end_time = time.time()
+            # st.markdown(content)
+            st.write('******************')
+            end_time = time.time()
 
-                # Display tables
-                st.markdown(f'### These are top {max_doc_num} texts used for generation:')
-                df = create_dataframe_from_response(response)
-                st.dataframe(df)
-                display_distribution_charts(df, st.session_state.selected_index)
+            # Display tables
+            st.markdown(f'### These are top {max_doc_num} texts used for generation:')
+            df = create_dataframe_from_response(response)
+            st.dataframe(df)
+            display_distribution_charts(df, st.session_state.selected_index)
 
-                # Send rating to Tally
-                execution_time = round(end_time - start_time, 2)
-                tally_form_url = f'https://tally.so/embed/wzq1Aa?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1&run_id={run_id}&time={execution_time}'
-                components.iframe(tally_form_url, width=700, height=800, scrolling=True)
+            # Send rating to Tally
+            execution_time = round(end_time - start_time, 2)
+            tally_form_url = f'https://tally.so/embed/wzq1Aa?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1&run_id={run_id}&time={execution_time}'
+            components.iframe(tally_form_url, width=700, height=800, scrolling=True)
 
-            except BadRequestError as e:
-                st.error(f'Failed to execute search (embeddings might be missing for this index): {e.info}')
-            except NotFoundError as e:
-                st.error(f'Index not found: {e.info}')
-            except Exception as e:
-                st.error(f'An unknown error occurred: {str(e)}')
-        if st.button('RE-RUN APP'):
-            time.sleep(1)
+            # except BadRequestError as e:
+            #     st.error(f'Failed to execute search (embeddings might be missing for this index): {e.info}')
+            # except NotFoundError as e:
+            #     st.error(f'Index not found: {e.info}')
+            # except Exception as e:
+            #     st.error(f'An unknown error occurred: {str(e)}')
+    if st.button('RE-RUN APP'):
+        time.sleep(1)
