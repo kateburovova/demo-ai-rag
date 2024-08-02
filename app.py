@@ -179,9 +179,6 @@ input_question = st.text_input("Enter your question here (phrased as if you ask 
 
 if input_question:
 
-    formatted_start_date, formatted_end_date = None, None
-
-
     @st.cache_resource(hash_funcs={"_thread.RLock": lambda _: None, "builtins.weakref": lambda _: None})
     def load_model():
         angle_model = AnglE.from_pretrained('WhereIsAI/UAE-Large-V1',
