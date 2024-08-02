@@ -164,11 +164,13 @@ def populate_default_values(index_name, es_config):
             sorted(language_values),
             sorted(country_values))
 
-def get_category_field(selected_index):
-    if "dem-arm" in selected_index or "ru-balkans" in selected_index:
+
+def get_category_field():
+    if "dem-arm" in st.session_state.selected_index or "ru-balkans" in st.session_state.selected_index:
         return 'misc.category_one.keyword'
     else:
         return 'category.keyword'
+
 
 def get_texts_from_elastic(input_question, question_vector, must_term, es_config, max_doc_num):
     try:
@@ -199,13 +201,15 @@ def get_texts_from_elastic(input_question, question_vector, must_term, es_config
         logging.info(
             f"Sample document: {response['hits']['hits'][0] if response['hits']['hits'] else 'No hits'}")
 
-        category_field = get_category_field(st.session_state.selected_index)
+        category_field = get_category_field()
         for doc in response['hits']['hits']:
             if st.session_state.compare_categories:
-                category = (doc['_source']
-                            .get(category_field.split('.')[0], {})
-                            .get(category_field.split('.')[1], 'Unknown')) \
-                    if '.' in category_field else doc['_source'].get(category_field, 'Unknown')
+                if '.' in category_field:
+                    parts = category_field.split('.')
+                    category = doc['_source'].get(parts[0], {}).get(parts[1], 'Unknown')
+                else:
+                    category = doc['_source'].get(category_field, 'Unknown')
+                logging.info(f"Categories: {category}")
                 texts_list.append((doc['_source']['translated_text'], doc['_source']['url'], category))
             else:
                 texts_list.append((doc['_source']['translated_text'], doc['_source']['url']))
