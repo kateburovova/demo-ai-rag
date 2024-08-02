@@ -259,6 +259,8 @@ def add_terms_condition(must_list, terms, field):
 
 def create_must_term(category_one_terms, category_two_terms, language_terms, country_terms, formatted_start_date,
                      formatted_end_date, thresholds_dict=None):
+    logging.info(f"At the start of create_must_term, use_base_category: {st.session_state.use_base_category}")
+
     logging.info(
         f"Creating must term with: category_one_terms={category_one_terms}, category_two_terms={category_two_terms}")
     must_term = [

@@ -116,10 +116,12 @@ if selected_index:
                                                                      'misc.category_one.keyword')
                 st.session_state.category_terms_two = populate_terms(categories_two_selected,
                                                                      'misc.category_two.keyword')
+                st.session_state.use_base_category = False
             elif "ru-balkans" in selected_index:
                 st.session_state.category_terms_one = populate_terms(categories_one_selected,
                                                                      'misc.category_one.keyword')
                 st.session_state.category_terms_two = []
+                st.session_state.use_base_category = False
             else:
                 st.session_state.category_terms_one = populate_terms(categories_one_selected, 'category.keyword')
                 st.session_state.use_base_category = True
