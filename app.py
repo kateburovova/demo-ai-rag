@@ -156,14 +156,12 @@ if selected_index:
             logging.info(f"Language terms: {language_terms}")
             logging.info(f"Country terms: {country_terms}")
 
-
-
-
-    with st.popover("Tap to define additional filtering by issue"):
-        st.markdown("Edit at least one of the following thresholds to start filtering. "
-                    "Any number of thresholds can be set simultaneously. "
-                    "Editing several thresholds will result in filtering by at least one match to any of them (not all together).")
-        if issues_fields:
+if issues_fields:
+    if st.button('Click to define issues'):
+        with st.form("Tap to define additional filtering by issue"):
+            st.markdown("Edit at least one of the following thresholds to start filtering. "
+                        "Any number of thresholds can be set simultaneously. "
+                        "Editing several thresholds will result in filtering by at least one match to any of them (not all together).")
             thresholds_dict = {}
             for field in issues_fields:
                 min_value, max_value = st.slider(
@@ -173,8 +171,10 @@ if selected_index:
                     value=(0.0, 0.0),  # Default slider range
                     step=0.05  # Slider step increment
                 )
+            submitted_issues = st.form_submit_button("Submit issues")
+            if submitted_issues:
                 if (min_value, max_value) != (0.0, 0.0):
-                    thresholds_dict[field] = f"{min_value}:{max_value}"
+                        thresholds_dict[field] = f"{min_value}:{max_value}"
 
 # Create prompt vector
 input_question = None
