@@ -51,6 +51,8 @@ def set_state_defaults():
         st.session_state.country_terms = None
     if 'use_base_category' not in st.session_state:
         st.session_state.use_base_category = False
+    if 'selected_index' not in st.session_state:
+        st.session_state.selected_index = None
 
 def get_unique_category_values(index_name, field, es_config):
     """

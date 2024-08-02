@@ -48,18 +48,19 @@ search_option = st.radio(
     "Choose Specific Indexes if you want to search one or more different indexes, choose All Project Indexes to select all indexes within a project.",
     ['All Project Indexes', 'Specific Indexes'])
 
+
 if search_option == 'Specific Indexes':
     selected_indexes = st.multiselect('Please choose one or more indexes', flat_index_list, default=None,
                                       placeholder="Select one or more indexes")
     if selected_indexes:
-        selected_index = ",".join(selected_indexes)
+        st.session_state.selected_index = ",".join(selected_indexes)
         st.write(f"We'll search in: {', '.join(selected_indexes)}")
     else:
-        selected_index = None
+        st.session_state.selected_index = None
 else:
     if len(project_indexes.keys()) == 1:  # If we have only 1 project, we don't offer choice of projects
         selected_indexes = list(project_indexes.values())
-        selected_index = ",".join(selected_indexes)
+        st.session_state.selected_index = ",".join(selected_indexes)
         st.write(f"We'll search in: {', '.join(selected_indexes)}")
 
     else:
@@ -67,13 +68,14 @@ else:
                                       placeholder="Select project")
         if project_choice:
             selected_indexes = project_indexes[project_choice]
-            selected_index = ",".join(selected_indexes)
+            st.session_state.selected_index = ",".join(selected_indexes)
             st.write(f"We'll search in: {', '.join(selected_indexes)}")
 
-if selected_index:
-    category_values_one, category_values_two, language_values, country_values = populate_default_values(selected_index,
-                                                                                                        es_config)
-    issues_fields = get_prefixed_fields(selected_index, 'issues.', es_config)
+if st.session_state.selected_index:
+    category_values_one, category_values_two, language_values, country_values \
+        = populate_default_values(st.session_state.selected_index,es_config)
+
+    issues_fields = get_prefixed_fields(st.session_state.selected_index, 'issues.', es_config)
 
     with st.form("Tap to refine filters"):
         st.markdown("Hihi 👋")
@@ -102,7 +104,7 @@ if selected_index:
         categories_one_selected = st.multiselect(
             'Select "Any" or choose one or more categories of the first (or only) level', category_values_one,
             default=['Any'])
-        if "dem-arm" in selected_index:
+        if "dem-arm" in st.session_state.selected_index:
             categories_two_selected = st.multiselect(
                 'Select "Any" or choose one or more categories of the second level if those exist', category_values_two,
                 default=['Any'])
@@ -116,13 +118,13 @@ if selected_index:
         submitted = st.form_submit_button("Save my choice", type="primary")
 
         if submitted:
-            if "dem-arm" in selected_index:
+            if "dem-arm" in st.session_state.selected_index:
                 st.session_state.category_terms_one = populate_terms(categories_one_selected,
                                                                      'misc.category_one.keyword')
                 st.session_state.category_terms_two = populate_terms(categories_two_selected,
                                                                      'misc.category_two.keyword')
                 st.session_state.use_base_category = False
-            elif "ru-balkans" in selected_index:
+            elif "ru-balkans" in st.session_state.selected_index:
                 st.session_state.category_terms_one = populate_terms(categories_one_selected,
                                                                      'misc.category_one.keyword')
                 st.session_state.category_terms_two = []
@@ -227,7 +229,7 @@ if input_question:
                 except Exception as e:
                     st.error(f'Failed to connect to Elasticsearch: {str(e)}')
 
-                response = es.search(index=selected_index,
+                response = es.search(index=st.session_state.selected_index,
                                      size=max_doc_num,
                                      knn={"field": "embeddings.WhereIsAI/UAE-Large-V1",
                                           "query_vector": question_vector,
@@ -274,7 +276,7 @@ if input_question:
                 st.markdown(f'### These are top {max_doc_num} texts used for generation:')
                 df = create_dataframe_from_response(response)
                 st.dataframe(df)
-                display_distribution_charts(df, selected_index)
+                display_distribution_charts(df, st.session_state.selected_index)
 
                 # Send rating to Tally
                 execution_time = round(end_time - start_time, 2)
