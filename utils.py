@@ -172,6 +172,66 @@ def get_category_field():
         return 'category.keyword'
 
 
+# def get_texts_from_elastic(input_question, question_vector, must_term, es_config, max_doc_num):
+#     try:
+#         texts_list = []
+#         st.write(f'Running search for {max_doc_num} relevant posts for question: {input_question}')
+#         try:
+#             es = Elasticsearch(f'https://{es_config["host"]}:{es_config["port"]}', api_key=es_config["api_key"],
+#                                request_timeout=600)
+#         except Exception as e:
+#             st.error(f'Failed to connect to Elasticsearch: {str(e)}')
+#
+#         response = es.search(index=st.session_state.selected_index,
+#                              size=max_doc_num,
+#                              knn={"field": "embeddings.WhereIsAI/UAE-Large-V1",
+#                                   "query_vector": question_vector,
+#                                   "k": max_doc_num,
+#                                   "num_candidates": 10000,
+#                                   "filter": {
+#                                       "bool": {
+#                                           "must": must_term,
+#                                           "must_not": [{"term": {"type": "comment"}}]
+#                                       }
+#                                   }
+#                                   }
+#                              )
+#
+#         logging.info(f"Total hits: {response['hits']['total']['value']}")
+#         logging.info(
+#             f"Sample document: {response['hits']['hits'][0] if response['hits']['hits'] else 'No hits'}")
+#
+#         category_field = get_category_field()
+#         for doc in response['hits']['hits']:
+#             if st.session_state.compare_categories:
+#                 if '.' in category_field:
+#                     parts = category_field.split('.')
+#                     category = doc['_source'].get(parts[0], {}).get(parts[1], 'Unknown')
+#                 else:
+#                     category = doc['_source'].get(category_field, 'Unknown')
+#                 logging.info(f"Categories: {category}")
+#                 texts_list.append((doc['_source']['translated_text'], doc['_source']['url'], category))
+#             else:
+#                 texts_list.append((doc['_source']['translated_text'], doc['_source']['url']))
+#
+#         st.write("Searching for documents, please wait...")
+#
+#         # Format urls so they work properly within streamlit
+#         corrected_texts_list = [(text, 'https://' + url if not url.startswith('http://') and not url.startswith(
+#             'https://') else url) for text, url in texts_list]
+#
+#         return corrected_texts_list, response
+#
+#     except BadRequestError as e:
+#         st.error(f'Failed to execute search (embeddings might be missing for this index): {e.info}')
+#         return [], None
+#     except NotFoundError as e:
+#         st.error(f'Index not found: {e.info}')
+#         return [], None
+#     except Exception as e:
+#         st.error(f'An unknown error occurred: {str(e)}')
+#         return [], None
+
 def get_texts_from_elastic(input_question, question_vector, must_term, es_config, max_doc_num):
     try:
         texts_list = []
@@ -203,24 +263,19 @@ def get_texts_from_elastic(input_question, question_vector, must_term, es_config
 
         category_field = get_category_field()
         for doc in response['hits']['hits']:
-            if st.session_state.compare_categories:
-                if '.' in category_field:
-                    parts = category_field.split('.')
-                    category = doc['_source'].get(parts[0], {}).get(parts[1], 'Unknown')
-                else:
-                    category = doc['_source'].get(category_field, 'Unknown')
-                logging.info(f"Categories: {category}")
-                texts_list.append((doc['_source']['translated_text'], doc['_source']['url'], category))
+            if '.' in category_field:
+                parts = category_field.split('.')
+                category = doc['_source'].get(parts[0], {}).get(parts[1], 'Unknown')
             else:
-                texts_list.append((doc['_source']['translated_text'], doc['_source']['url']))
+                category = doc['_source'].get(category_field, 'Unknown')
 
-
+            texts_list.append((doc['_source']['translated_text'], doc['_source']['url'], category))
 
         st.write("Searching for documents, please wait...")
 
         # Format urls so they work properly within streamlit
         corrected_texts_list = [(text, 'https://' + url if not url.startswith('http://') and not url.startswith(
-            'https://') else url) for text, url in texts_list]
+            'https://') else url, category) for text, url, category in texts_list]
 
         return corrected_texts_list, response
 
