@@ -257,7 +257,7 @@ if input_question:
                 #     'https://') else url) for text, url in texts_list]
             corrected_texts_list, response = get_texts_from_elastic(input_question=input_question,
                                                           question_vector=question_vector,
-                                                          must_term=st.session_state.must_term,
+                                                          must_term=must_term,
                                                           es_config=es_config,
                                                           max_doc_num=max_doc_num)
 
