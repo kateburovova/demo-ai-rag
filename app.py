@@ -207,7 +207,7 @@ if input_question:
     if must_term:
 
         # Run search
-        if st.button('RUN SEARCH'):
+        if st.button('RUN SEARCH', type="primary"):
             start_time = time.time()
             max_doc_num = 30
             try:
@@ -279,3 +279,5 @@ if input_question:
                 st.error(f'Index not found: {e.info}')
             except Exception as e:
                 st.error(f'An unknown error occurred: {str(e)}')
+        if st.button('RE-RUN APP'):
+            time.sleep(1)
