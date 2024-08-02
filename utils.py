@@ -155,6 +155,15 @@ project_indexes = {
         'dem-arm-telegram',
         'dem-arm-web',
         'dem-arm-youtube'
+    ],
+    'dem-by': [
+        'dem-by-telegram',
+        'dem-by-youtube',
+        'dem-by-odnoklassniki',
+        'dem-by-vkontakte',
+        'dem-by-instagram',
+        'dem-by-web',
+        'dem-by-whisper-tiktok'
     ]
 }
 flat_index_list = [index for indexes in project_indexes.values() for index in indexes]
