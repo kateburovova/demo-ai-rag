@@ -47,6 +47,7 @@ category_terms_two = None
 thresholds_dict = None
 country_terms = None
 must_term = None
+issues_fields = None
 
 ########## APP start ###########
 st.set_page_config(layout="wide")
