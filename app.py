@@ -239,7 +239,7 @@ if issues_fields:
                     if st.session_state[field] != (0.0, 0.0)
                 }
                 logging.info(f"Issue terms: {st.session_state.thresholds_dict}")
-                thresholds_dict = st.session_state.thresholds_dict
+                # thresholds_dict = st.session_state.thresholds_dict
 
 
 # Create prompt vector
@@ -281,6 +281,7 @@ if input_question:
     #                                  formatted_end_date=formatted_end_date,
     #                                  thresholds_dict=thresholds_dict)
     #     logging.info(f"Created must term: {must_term}")
+    logging.info(f"Issue terms after question definition: {st.session_state.thresholds_dict}")
     if formatted_start_date and formatted_end_date:
         must_term = create_must_term(st.session_state.category_terms_one,
                                      st.session_state.category_terms_two,
@@ -288,7 +289,7 @@ if input_question:
                                      st.session_state.country_terms,
                                      formatted_start_date=formatted_start_date,
                                      formatted_end_date=formatted_end_date,
-                                     thresholds_dict=thresholds_dict)
+                                     thresholds_dict=st.session_state.thresholds_dict)
 
     # if formatted_start_date and formatted_end_date:
     if must_term:
