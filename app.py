@@ -53,6 +53,14 @@ if 'thresholds_dict' not in st.session_state:
     st.session_state.thresholds_dict = {}
 if 'show_issues_form' not in st.session_state:
     st.session_state.show_issues_form = False
+if 'category_terms_one' not in st.session_state:
+    st.session_state.category_terms_one = None
+if 'category_terms_two' not in st.session_state:
+    st.session_state.category_terms_two = None
+if 'language_terms' not in st.session_state:
+    st.session_state.language_terms = None
+if 'country_terms' not in st.session_state:
+    st.session_state.country_terms = None
 
 ########## APP start ###########
 st.set_page_config(layout="wide")
@@ -144,19 +152,35 @@ if selected_index:
         logging.info(f"Selected countries: {country_values}")
 
         submitted = st.form_submit_button("Submit")
+        # if submitted:
+        #     if "dem-arm" in selected_index:
+        #         category_terms_one = populate_terms(categories_one_selected, 'misc.category_one.keyword')
+        #         category_terms_two = populate_terms(categories_two_selected, 'misc.category_two.keyword')
+        #     elif "ru-balkans" in selected_index:
+        #         category_terms_one = populate_terms(categories_one_selected, 'misc.category_one.keyword')
+        #         category_terms_two = []
+        #     else:
+        #         category_terms_one = populate_terms(categories_one_selected, 'category.keyword')
+        #         category_terms_two = []
+        #
+        #     language_terms = populate_terms(languages_selected, 'language_text.keyword')
+        #     country_terms = populate_terms(countries_selected, 'country.keyword')
         if submitted:
             if "dem-arm" in selected_index:
-                category_terms_one = populate_terms(categories_one_selected, 'misc.category_one.keyword')
-                category_terms_two = populate_terms(categories_two_selected, 'misc.category_two.keyword')
+                st.session_state.category_terms_one = populate_terms(categories_one_selected,
+                                                                     'misc.category_one.keyword')
+                st.session_state.category_terms_two = populate_terms(categories_two_selected,
+                                                                     'misc.category_two.keyword')
             elif "ru-balkans" in selected_index:
-                category_terms_one = populate_terms(categories_one_selected, 'misc.category_one.keyword')
-                category_terms_two = []
+                st.session_state.category_terms_one = populate_terms(categories_one_selected,
+                                                                     'misc.category_one.keyword')
+                st.session_state.category_terms_two = []
             else:
-                category_terms_one = populate_terms(categories_one_selected, 'category.keyword')
-                category_terms_two = []
+                st.session_state.category_terms_one = populate_terms(categories_one_selected, 'category.keyword')
+                st.session_state.category_terms_two = []
 
-            language_terms = populate_terms(languages_selected, 'language_text.keyword')
-            country_terms = populate_terms(countries_selected, 'country.keyword')
+            st.session_state.language_terms = populate_terms(languages_selected, 'language_text.keyword')
+            st.session_state.country_terms = populate_terms(countries_selected, 'country.keyword')
 
             logging.info(f"Category terms after population: one={category_terms_one}, two={category_terms_two}")
             logging.info(f"Language terms: {language_terms}")
@@ -245,15 +269,23 @@ if input_question:
     # formatted_end_date = selected_end_date.strftime("%Y-%m-%d")
     # st.write("You selected end date:", selected_end_date)
     logging.info(f"Selected categories: one={categories_one_selected}, two={categories_two_selected}")
+    # if formatted_start_date and formatted_end_date:
+    #     must_term = create_must_term(category_terms_one,
+    #                                  category_terms_two,
+    #                                  language_terms,
+    #                                  country_terms,
+    #                                  formatted_start_date=formatted_start_date,
+    #                                  formatted_end_date=formatted_end_date,
+    #                                  thresholds_dict=thresholds_dict)
+    #     logging.info(f"Created must term: {must_term}")
     if formatted_start_date and formatted_end_date:
-        must_term = create_must_term(category_terms_one,
-                                     category_terms_two,
-                                     language_terms,
-                                     country_terms,
+        must_term = create_must_term(st.session_state.category_terms_one,
+                                     st.session_state.category_terms_two,
+                                     st.session_state.language_terms,
+                                     st.session_state.country_terms,
                                      formatted_start_date=formatted_start_date,
                                      formatted_end_date=formatted_end_date,
                                      thresholds_dict=thresholds_dict)
-        logging.info(f"Created must term: {must_term}")
 
     # if formatted_start_date and formatted_end_date:
     if must_term:
