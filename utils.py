@@ -51,7 +51,8 @@ def set_state_defaults():
         st.session_state.language_terms = None
     if 'country_terms' not in st.session_state:
         st.session_state.country_terms = None
-    st.session_state.use_base_category = False
+    if 'use_base_category' not in st.session_state:
+        st.session_state.use_base_category = False
 
 def get_unique_category_values(index_name, field, es_config):
     """
@@ -258,7 +259,7 @@ def add_terms_condition(must_list, terms, field):
 
 
 def create_must_term(category_one_terms, category_two_terms, language_terms, country_terms, formatted_start_date,
-                     formatted_end_date, thresholds_dict=None, use_base_category=st.session_state.use_base_category):
+                     formatted_end_date, thresholds_dict=None):
     logging.info(f"At the start of create_must_term, use_base_category: {st.session_state.use_base_category}")
 
     logging.info(
@@ -268,7 +269,7 @@ def create_must_term(category_one_terms, category_two_terms, language_terms, cou
     ]
 
     if category_one_terms:
-        if use_base_category:
+        if st.session_state.use_base_category:
             add_terms_condition(must_term, category_one_terms, 'category.keyword')
             logging.info(f"Using base category. After adding category: {must_term}")
         else:
