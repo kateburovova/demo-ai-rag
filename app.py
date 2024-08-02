@@ -16,11 +16,6 @@ from utils import (display_distribution_charts, populate_default_values, project
 import streamlit as st
 import streamlit.components.v1 as components
 from langchain import hub, callbacks
-from langchain_openai import ChatOpenAI
-from elasticsearch import Elasticsearch, BadRequestError
-from elasticsearch.exceptions import NotFoundError
-from angle_emb import AnglE, Prompts
-
 
 logging.basicConfig(level=logging.INFO)
 
