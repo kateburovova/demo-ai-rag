@@ -49,6 +49,11 @@ country_terms = None
 must_term = None
 issues_fields = None
 
+if 'thresholds_dict' not in st.session_state:
+    st.session_state.thresholds_dict = {}
+if 'show_issues_form' not in st.session_state:
+    st.session_state.show_issues_form = False
+
 ########## APP start ###########
 st.set_page_config(layout="wide")
 if not check_password():
@@ -156,26 +161,59 @@ if selected_index:
             logging.info(f"Category terms after population: one={category_terms_one}, two={category_terms_two}")
             logging.info(f"Language terms: {language_terms}")
             logging.info(f"Country terms: {country_terms}")
+else:
+    issues_fields = None
+
+# if issues_fields:
+#     if st.button('Click to define issues'):
+#         with st.form("Tap to define additional filtering by issue"):
+#             st.markdown("Edit at least one of the following thresholds to start filtering. "
+#                         "Any number of thresholds can be set simultaneously. "
+#                         "Editing several thresholds will result in filtering by at least one match to any of them (not all together).")
+#             thresholds_dict = {}
+#             for field in issues_fields:
+#                 min_value, max_value = st.slider(
+#                     f"Threshold range for {field}",
+#                     min_value=0.0,  # Set an appropriate minimum value
+#                     max_value=1.0,  # Set an appropriate maximum value
+#                     value=(0.0, 0.0),  # Default slider range
+#                     step=0.05  # Slider step increment
+#                 )
+#             submitted_issues = st.form_submit_button("Submit issues")
+#             if submitted_issues:
+#                 if (min_value, max_value) != (0.0, 0.0):
+#                         thresholds_dict[field] = f"{min_value}:{max_value}"
 
 if issues_fields:
-    if st.button('Click to define issues'):
+    if st.button('Click to define issues') or st.session_state.show_issues_form:
+        st.session_state.show_issues_form = True
         with st.form("Tap to define additional filtering by issue"):
             st.markdown("Edit at least one of the following thresholds to start filtering. "
                         "Any number of thresholds can be set simultaneously. "
                         "Editing several thresholds will result in filtering by at least one match to any of them (not all together).")
-            thresholds_dict = {}
+
             for field in issues_fields:
+                # Use session state to remember the slider values
+                if field not in st.session_state:
+                    st.session_state[field] = (0.0, 0.0)
+
                 min_value, max_value = st.slider(
                     f"Threshold range for {field}",
-                    min_value=0.0,  # Set an appropriate minimum value
-                    max_value=1.0,  # Set an appropriate maximum value
-                    value=(0.0, 0.0),  # Default slider range
-                    step=0.05  # Slider step increment
+                    min_value=0.0,
+                    max_value=1.0,
+                    value=st.session_state[field],
+                    step=0.05
                 )
+                # Update session state
+                st.session_state[field] = (min_value, max_value)
+
             submitted_issues = st.form_submit_button("Submit issues")
             if submitted_issues:
-                if (min_value, max_value) != (0.0, 0.0):
-                        thresholds_dict[field] = f"{min_value}:{max_value}"
+                st.session_state.thresholds_dict = {
+                    field: f"{st.session_state[field][0]}:{st.session_state[field][1]}"
+                    for field in issues_fields
+                    if st.session_state[field] != (0.0, 0.0)
+                }
 
 # Create prompt vector
 input_question = None
