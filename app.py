@@ -114,7 +114,7 @@ if selected_index:
                                             default=['Any'])
         logging.info(f"Selected countries: {country_values}")
 
-        submitted = st.form_submit_button("Submit")
+        submitted = st.form_submit_button("Save my choice")
 
         if submitted:
             if "dem-arm" in selected_index:
@@ -164,7 +164,7 @@ if issues_fields:
                 # Update session state
                 st.session_state[field] = (min_value, max_value)
 
-            submitted_issues = st.form_submit_button("Submit issues")
+            submitted_issues = st.form_submit_button("Save my choice")
             if submitted_issues:
                 st.session_state.thresholds_dict = {
                     field: f"{st.session_state[field][0]}:{st.session_state[field][1]}"
