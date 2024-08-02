@@ -104,7 +104,7 @@ if st.session_state.selected_index:
         if st.session_state.compare_categories:
             categories_one_selected = st.multiselect(
                 'Select "Any" or choose one or more categories of the first (or only) level', category_values_one,
-                default=[category for category in category_values_one if category != 'Any'])
+                default=[category for category in category_values_one if category not in ['Any', None]])
         else:
             categories_one_selected = st.multiselect(
                 'Select "Any" or choose one or more categories of the first (or only) level', category_values_one,
