@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 from authentificate import check_password
 from utils import (display_distribution_charts, populate_default_values, project_indexes,
                    populate_terms, create_must_term, create_dataframe_from_response, flat_index_list,
-                   get_prefixed_fields)
+                   get_prefixed_fields,set_state_defaults)
 
 # External
 import streamlit as st
@@ -41,26 +41,23 @@ es_config = {
     'port': st.secrets['ld_rag']['ELASTIC_PORT'],
     'api_key': st.secrets['ld_rag']['ELASTIC_API']
 }
-# category_terms_one = None
-# language_terms = None
-# category_terms_two = None
-# thresholds_dict = None
-# country_terms = None
-must_term = None
-issues_fields = None
 
-if 'thresholds_dict' not in st.session_state:
-    st.session_state.thresholds_dict = {}
-if 'show_issues_form' not in st.session_state:
-    st.session_state.show_issues_form = False
-if 'category_terms_one' not in st.session_state:
-    st.session_state.category_terms_one = None
-if 'category_terms_two' not in st.session_state:
-    st.session_state.category_terms_two = None
-if 'language_terms' not in st.session_state:
-    st.session_state.language_terms = None
-if 'country_terms' not in st.session_state:
-    st.session_state.country_terms = None
+set_state_defaults()
+# must_term = None
+# issues_fields = None
+#
+# if 'thresholds_dict' not in st.session_state:
+#     st.session_state.thresholds_dict = {}
+# if 'show_issues_form' not in st.session_state:
+#     st.session_state.show_issues_form = False
+# if 'category_terms_one' not in st.session_state:
+#     st.session_state.category_terms_one = None
+# if 'category_terms_two' not in st.session_state:
+#     st.session_state.category_terms_two = None
+# if 'language_terms' not in st.session_state:
+#     st.session_state.language_terms = None
+# if 'country_terms' not in st.session_state:
+#     st.session_state.country_terms = None
 
 ########## APP start ###########
 st.set_page_config(layout="wide")

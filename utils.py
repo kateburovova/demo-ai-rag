@@ -7,6 +7,23 @@ from elasticsearch import Elasticsearch
 
 logging.basicConfig(level=logging.INFO)
 
+def set_state_defaults():
+    must_term = None
+    issues_fields = None
+
+    if 'thresholds_dict' not in st.session_state:
+        st.session_state.thresholds_dict = {}
+    if 'show_issues_form' not in st.session_state:
+        st.session_state.show_issues_form = False
+    if 'category_terms_one' not in st.session_state:
+        st.session_state.category_terms_one = None
+    if 'category_terms_two' not in st.session_state:
+        st.session_state.category_terms_two = None
+    if 'language_terms' not in st.session_state:
+        st.session_state.language_terms = None
+    if 'country_terms' not in st.session_state:
+        st.session_state.country_terms = None
+
 
 def get_unique_category_values(index_name, field, es_config):
     """
