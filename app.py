@@ -255,6 +255,10 @@ if input_question:
             st.dataframe(df)
             display_distribution_charts(df, st.session_state.selected_index)
 
+            st.markdown("### Raw Data for Copying:")
+            raw_text = str(corrected_texts_list)
+            st.text_area("Copy this data:", value=raw_text, height=300)
+
             # Send rating to Tally
             execution_time = round(end_time - start_time, 2)
             tally_form_url = f'https://tally.so/embed/wzq1Aa?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1&run_id={run_id}&time={execution_time}'
