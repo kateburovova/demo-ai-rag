@@ -41,11 +41,11 @@ es_config = {
     'port': st.secrets['ld_rag']['ELASTIC_PORT'],
     'api_key': st.secrets['ld_rag']['ELASTIC_API']
 }
-category_terms_one = None
-language_terms = None
-category_terms_two = None
-thresholds_dict = None
-country_terms = None
+# category_terms_one = None
+# language_terms = None
+# category_terms_two = None
+# thresholds_dict = None
+# country_terms = None
 must_term = None
 issues_fields = None
 
@@ -182,9 +182,11 @@ if selected_index:
             st.session_state.language_terms = populate_terms(languages_selected, 'language_text.keyword')
             st.session_state.country_terms = populate_terms(countries_selected, 'country.keyword')
 
-            logging.info(f"Category terms after population: one={category_terms_one}, two={category_terms_two}")
-            logging.info(f"Language terms: {language_terms}")
-            logging.info(f"Country terms: {country_terms}")
+            logging.info(
+                f"Category terms after population: one={st.session_state.category_terms_one}, "
+                f"two={st.session_state.category_terms_two}")
+            logging.info(f"Language terms: {st.session_state.language_terms}")
+            logging.info(f"Country terms: {st.session_state.country_terms}")
 else:
     issues_fields = None
 
@@ -260,27 +262,10 @@ if input_question:
     angle = load_model()
     vec = angle.encode({'text': input_question}, to_numpy=True, prompt=Prompts.C)
     question_vector = vec.tolist()[0]
-
-    # default_start_date = datetime(2024, 7, 15)
-    # default_end_date = datetime(2024, 7, 30)
-    #
-    # # Get input dates
-    # selected_start_date = st.date_input("Select start date:", default_start_date)
-    # formatted_start_date = selected_start_date.strftime("%Y-%m-%d")
-    # st.write("You selected start date:", selected_start_date)
-    # selected_end_date = st.date_input("Select end date:", default_end_date)
-    # formatted_end_date = selected_end_date.strftime("%Y-%m-%d")
-    # st.write("You selected end date:", selected_end_date)
-    logging.info(f"Selected categories: one={categories_one_selected}, two={categories_two_selected}")
-    # if formatted_start_date and formatted_end_date:
-    #     must_term = create_must_term(category_terms_one,
-    #                                  category_terms_two,
-    #                                  language_terms,
-    #                                  country_terms,
-    #                                  formatted_start_date=formatted_start_date,
-    #                                  formatted_end_date=formatted_end_date,
-    #                                  thresholds_dict=thresholds_dict)
-    #     logging.info(f"Created must term: {must_term}")
+    logging.info(
+        f"Selected categories: one={st.session_state.category_terms_one}, two={st.session_state.category_terms_two}")
+    logging.info(f"Selected languages: {st.session_state.language_terms}")
+    logging.info(f"Selected countries: {st.session_state.country_terms}")
     logging.info(f"Issue terms after question definition: {st.session_state.thresholds_dict}")
     if formatted_start_date and formatted_end_date:
         must_term = create_must_term(st.session_state.category_terms_one,
@@ -290,13 +275,7 @@ if input_question:
                                      formatted_start_date=formatted_start_date,
                                      formatted_end_date=formatted_end_date,
                                      thresholds_dict=st.session_state.thresholds_dict)
-
-    # if formatted_start_date and formatted_end_date:
     if must_term:
-
-        # # Authorise user
-        # if not check_password():
-        #     st.stop()
 
         # Run search
         if st.button('RUN SEARCH'):
