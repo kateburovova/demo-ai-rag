@@ -32,9 +32,12 @@ if not check_password():
 st.markdown('### Please select search parameters 🔎')
 
 # Get format and pull relevant prompt
-format_choice = st.radio("Choose the preferred output format:", ['Summary', 'Alert'])
+format_choice = st.radio("Choose the preferred output format:", ['Summary', 'Alert', 'Actor Comparison'])
 if format_choice == 'Alert':
     url = f'{os.environ["LANGSMITH_ACC"]}/simple-rag'
+elif format_choice == 'Actor Comparison':
+    url = f'{os.environ["LANGSMITH_ACC"]}/simple-rag' # TODO : update to relevant prompt
+    st.session_state.compare_categories = True
 else:
     url = f'{os.environ["LANGSMITH_ACC"]}/simple-rag:9388b291'
     format_choice = 'Summary'
@@ -98,9 +101,14 @@ if st.session_state.selected_index:
             st.session_state.formatted_start_date = None
             st.session_state.formatted_end_date = None
 
-        categories_one_selected = st.multiselect(
-            'Select "Any" or choose one or more categories of the first (or only) level', category_values_one,
-            default=['Any'])
+        if st.session_state.compare_categories:
+            categories_one_selected = st.multiselect(
+                'Select "Any" or choose one or more categories of the first (or only) level', category_values_one,
+                default=[category for category in category_values_one if category != 'Any'])
+        else:
+            categories_one_selected = st.multiselect(
+                'Select "Any" or choose one or more categories of the first (or only) level', category_values_one,
+                default=['Any'])
         if "dem-arm" in st.session_state.selected_index:
             categories_two_selected = st.multiselect(
                 'Select "Any" or choose one or more categories of the second level if those exist', category_values_two,

@@ -36,6 +36,7 @@ def init_llm_params():
                           model_name='gpt-4-1106-preview')
     return llm_chat
 
+
 def set_state_defaults():
     if 'formatted_start_date' not in st.session_state:
         st.session_state.formatted_start_date = None
@@ -57,6 +58,8 @@ def set_state_defaults():
         st.session_state.use_base_category = False
     if 'selected_index' not in st.session_state:
         st.session_state.selected_index = None
+    if 'compare_categories' not in st.session_state:
+        st.session_state.compare_categories = False
 
 def get_unique_category_values(index_name, field, es_config):
     """
@@ -161,6 +164,11 @@ def populate_default_values(index_name, es_config):
             sorted(language_values),
             sorted(country_values))
 
+def get_category_field(selected_index):
+    if "dem-arm" in selected_index or "ru-balkans" in selected_index:
+        return 'misc.category_one.keyword'
+    else:
+        return 'category.keyword'
 
 def get_texts_from_elastic(input_question, question_vector, must_term, es_config, max_doc_num):
     try:
@@ -191,8 +199,18 @@ def get_texts_from_elastic(input_question, question_vector, must_term, es_config
         logging.info(
             f"Sample document: {response['hits']['hits'][0] if response['hits']['hits'] else 'No hits'}")
 
+        category_field = get_category_field(st.session_state.selected_index)
         for doc in response['hits']['hits']:
-            texts_list.append((doc['_source']['translated_text'], doc['_source']['url']))
+            if st.session_state.compare_categories:
+                category = (doc['_source']
+                            .get(category_field.split('.')[0], {})
+                            .get(category_field.split('.')[1], 'Unknown')) \
+                    if '.' in category_field else doc['_source'].get(category_field, 'Unknown')
+                texts_list.append((doc['_source']['translated_text'], doc['_source']['url'], category))
+            else:
+                texts_list.append((doc['_source']['translated_text'], doc['_source']['url']))
+
+
 
         st.write("Searching for documents, please wait...")
 
