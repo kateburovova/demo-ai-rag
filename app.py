@@ -86,7 +86,7 @@ if st.session_state.selected_index:
         default_start_date = datetime(2024, 7, 15)
         default_end_date = datetime(2024, 7, 30)
         default_non_null_categories_one = [category for category in category_values_one
-                                           if category not in ['Any', None]]
+                                           if category not in ['Any', None, '']]
         logging.info(f"Default categories_one: {default_non_null_categories_one}")
 
 
