@@ -27,8 +27,10 @@ def init_llm_params():
 def set_state_defaults():
     must_term = None
     issues_fields = None
-    formatted_start_date = None
-    formatted_end_date = None
+    if 'formatted_start_date' not in st.session_state:
+        st.session_state.formatted_start_date = None
+    if 'formatted_end_date' not in st.session_state:
+        st.session_state.formatted_end_date = None
     if 'thresholds_dict' not in st.session_state:
         st.session_state.thresholds_dict = {}
     if 'show_issues_form' not in st.session_state:

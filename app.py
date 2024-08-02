@@ -93,12 +93,11 @@ if selected_index:
 
         if len(date_range) == 2:
             selected_start_date, selected_end_date = date_range
-            formatted_start_date = selected_start_date.strftime("%Y-%m-%d")
-            formatted_end_date = selected_end_date.strftime("%Y-%m-%d")
-
+            st.session_state.formatted_start_date = selected_start_date.strftime("%Y-%m-%d")
+            st.session_state.formatted_end_date = selected_end_date.strftime("%Y-%m-%d")
         else:
-            # st.error("Please select both start and end dates.")
-            selected_start_date = selected_end_date = None
+            st.session_state.formatted_start_date = None
+            st.session_state.formatted_end_date = None
 
         categories_one_selected = st.multiselect(
             'Select "Any" or choose one or more categories of the first (or only) level', category_values_one,
@@ -197,13 +196,13 @@ if input_question:
     logging.info(f"Selected languages: {st.session_state.language_terms}")
     logging.info(f"Selected countries: {st.session_state.country_terms}")
     logging.info(f"Issue terms after question definition: {st.session_state.thresholds_dict}")
-    if formatted_start_date and formatted_end_date:
+    if st.session_state.formatted_start_date and st.session_state.formatted_end_date:
         must_term = create_must_term(st.session_state.category_terms_one,
                                      st.session_state.category_terms_two,
                                      st.session_state.language_terms,
                                      st.session_state.country_terms,
-                                     formatted_start_date=formatted_start_date,
-                                     formatted_end_date=formatted_end_date,
+                                     formatted_start_date=st.session_state.formatted_start_date,
+                                     formatted_end_date=st.session_state.formatted_end_date,
                                      thresholds_dict=st.session_state.thresholds_dict)
     if must_term:
 
