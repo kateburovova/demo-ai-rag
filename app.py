@@ -267,10 +267,10 @@ if input_question:
                 if len(model_names) < 2:
                     st.error("Not enough models available for comparison.")
                 else:
-                    model1 = st.selectbox("Select first model", ["None"] + model_names, index=0, key="model1")
+                    model1 = st.selectbox("Select first model", [None] + model_names, index=0, key="model1")
 
                     remaining_models = [m for m in model_names if m != model1]
-                    model2 = st.selectbox("Select second model", ["None"] + model_names, index=0, key="model2")
+                    model2 = st.selectbox("Select second model", [None] + model_names, index=0, key="model2")
 
                     if model1 and model2:
 
