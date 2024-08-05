@@ -80,19 +80,11 @@ def init_llms(config, api_keys):
     return llm_models
 
 
-def init_llm_params():
-    # Init Langchain and Langsmith services
-    os.environ["LANGCHAIN_TRACING_V2"] = "true"
-    os.environ["LANGCHAIN_PROJECT"] = f"rag_app : summarization : production"
-    os.environ["LANGCHAIN_ENDPOINT"] = "https://api.smith.langchain.com"
-    os.environ["LANGCHAIN_API_KEY"] = st.secrets['ld_rag']['LANGCHAIN_API_KEY']
+def init_langsmith_params(config):
+    os.environ["LANGCHAIN_TRACING_V2"] = config['langchain']['tracing_v2']
+    os.environ["LANGCHAIN_PROJECT"] = config['langchain']['project']
+    os.environ["LANGCHAIN_ENDPOINT"] = config['langchain']['endpoint']
     os.environ["LANGSMITH_ACC"] = st.secrets['ld_rag']['LANGSMITH_ACC']
-
-    # Init openai model
-    OPENAI_API_KEY = st.secrets['ld_rag']['OPENAI_KEY_ORG']
-    llm_chat = ChatOpenAI(temperature=0.0, openai_api_key=OPENAI_API_KEY,
-                          model_name='gpt-4-1106-preview')
-    return llm_chat
 
 
 def set_state_defaults():
@@ -120,8 +112,24 @@ def set_state_defaults():
         st.session_state.compare_categories = False
 
 
-def generate_output_stream(prompt_url, llm, texts, placeholder, input_question):
-    prompt_template = hub.pull(prompt_url)
+def pull_prompts(config):
+    langsmith_acc = os.environ.get("LANGSMITH_ACC", "")
+    prompts = {}
+
+    for task, task_config in config['tasks'].items():
+        prompt_id = task_config['primary']
+        full_prompt_url = f"{langsmith_acc}/{prompt_id}"
+
+        try:
+            prompt_template = hub.pull(full_prompt_url)
+            prompts[task] = prompt_template
+            logging.info(f"Successfully pulled prompt for task: {task}")
+        except Exception as e:
+            logging.warning(f"Using default prompt for task: {task}")
+
+    return prompts
+
+def generate_output_stream(prompt_template, llm, texts, placeholder, input_question):
     customer_messages = prompt_template.format_messages(
         question=input_question,
         texts=texts
