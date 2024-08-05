@@ -120,7 +120,7 @@ def pull_prompts(config):
 
     for task, task_config in config['tasks'].items():
         prompt_id = task_config['primary']
-        full_prompt_url = f'https://api.hub.langchain.com/{langsmith_acc}/{prompt_id}'
+        full_prompt_url = f'{langsmith_acc}/{prompt_id}'
         logging.info(f'full_prompt_url: {full_prompt_url}')
 
         try:
