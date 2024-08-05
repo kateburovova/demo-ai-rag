@@ -59,7 +59,10 @@ st.markdown('### Please select search parameters 🔎')
 
 # Get format and pull relevant prompt
 task_options = list(config['tasks'].keys())
-selected_task = st.radio("Choose the preferred output format:", task_options)
+label_options = [config['tasks'][task]['label'] for task in task_options]
+selected_label = st.radio("Choose the preferred output format:", label_options)
+selected_task = task_options[label_options.index(selected_label)]
+
 if selected_task == 'actor_comparison':
     st.session_state.compare_categories = True
 

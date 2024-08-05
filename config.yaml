@@ -21,12 +21,15 @@ tasks:
   summary:
     primary: 'simple-rag:9388b291'
     additional: []
+    label : 'Summary'
   alert:
     primary: 'simple-rag'
     additional: []
+    label: 'Alert'
   actor_comparison:
     primary: 'rag-app'
     additional: []
+    label: 'Actor Comparison'
 
 # Comparison mode configuration
 comparison_mode:
