@@ -66,19 +66,6 @@ if config['comparison_mode']['enabled']:
 else:
     comparison_mode = False
 
-# llm_models = init_llms(config)
-
-# format_choice = st.radio("Choose the preferred output format:", ['Summary', 'Alert', 'Actor Comparison'])
-# if format_choice == 'Alert':
-#     url = f'{os.environ["LANGSMITH_ACC"]}/simple-rag'
-# elif format_choice == 'Actor Comparison':
-#     url = f'{os.environ["LANGSMITH_ACC"]}/simple-rag' # TODO : update to relevant prompt
-#     st.session_state.compare_categories = True
-# else:
-#     url = f'{os.environ["LANGSMITH_ACC"]}/simple-rag:9388b291'
-#     format_choice = 'Summary'
-# prompt_template = hub.pull(url)
-
 
 search_option = st.radio(
     "Choose Specific Indexes if you want to search one or more different indexes, choose All Project Indexes to select all indexes within a project.",
