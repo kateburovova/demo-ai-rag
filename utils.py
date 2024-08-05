@@ -12,6 +12,7 @@ from langchain_anthropic import ChatAnthropic
 from elasticsearch import Elasticsearch, BadRequestError
 from elasticsearch.exceptions import NotFoundError
 from angle_emb import AnglE, Prompts
+from langchain.prompts import ChatPromptTemplate, HumanMessagePromptTemplate, SystemMessagePromptTemplate
 
 logging.basicConfig(level=logging.INFO)
 
@@ -125,7 +126,16 @@ def pull_prompts(config):
             prompts[task] = prompt_template
             logging.info(f"Successfully pulled prompt for task: {task}")
         except Exception as e:
-            logging.warning(f"Using default prompt for task: {task}")
+            logging.warning(f"Failed to pull prompt for task {task}: {e}")
+            # Create a default prompt
+            system_template = "You are a helpful assistant that summarizes information."
+            human_template = "Please summarize the following information:\n\n{texts}\n\nQuestion: {question}"
+            default_prompt = ChatPromptTemplate.from_messages([
+                SystemMessagePromptTemplate.from_template(system_template),
+                HumanMessagePromptTemplate.from_template(human_template)
+            ])
+            prompts[task] = default_prompt
+            logging.info(f"Using default prompt for task: {task}")
 
     return prompts
 
