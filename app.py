@@ -4,7 +4,6 @@ import time
 import logging
 from datetime import datetime, timedelta
 
-
 # Internal
 from authentificate import check_password
 from utils import (display_distribution_charts, populate_default_values, project_indexes,
@@ -28,12 +27,11 @@ init_langsmith_params(config)
 prompts = pull_prompts(config)
 set_state_defaults()
 
-
 ########## APP start ###########
 st.set_page_config(layout="wide")
 
 logo_url = 'assets/Blue_black_long.png'
-st.image(logo_url,  width=300)
+st.image(logo_url, width=300)
 
 if not check_password():
     st.stop()
@@ -66,11 +64,9 @@ if config['comparison_mode']['enabled']:
 else:
     comparison_mode = False
 
-
 search_option = st.radio(
     "Choose Specific Indexes if you want to search one or more different indexes, choose All Project Indexes to select all indexes within a project.",
     ['All Project Indexes', 'Specific Indexes'])
-
 
 if search_option == 'Specific Indexes':
     selected_indexes = st.multiselect('Please choose one or more indexes', flat_index_list, default=None,
@@ -96,7 +92,7 @@ else:
 
 if st.session_state.selected_index:
     category_values_one, category_values_two, language_values, country_values \
-        = populate_default_values(st.session_state.selected_index,es_config)
+        = populate_default_values(st.session_state.selected_index, es_config)
 
     issues_fields = get_prefixed_fields(st.session_state.selected_index, 'issues.', es_config)
 
@@ -111,7 +107,6 @@ if st.session_state.selected_index:
         default_non_null_categories_one = [category for category in category_values_one
                                            if category not in ['Any', None, '']]
         logging.info(f"Default categories_one: {default_non_null_categories_one}")
-
 
         if "dem-arm" or "ru-balkans" in st.session_state.selected_index:
             st.session_state.use_base_category = False
@@ -252,10 +247,10 @@ if input_question:
             # start_time = time.time()
             max_doc_num = 30
             corrected_texts_list, response = get_texts_from_elastic(input_question=input_question,
-                                                          question_vector=question_vector,
-                                                          must_term=must_term,
-                                                          es_config=es_config,
-                                                          max_doc_num=max_doc_num)
+                                                                    question_vector=question_vector,
+                                                                    must_term=must_term,
+                                                                    es_config=es_config,
+                                                                    max_doc_num=max_doc_num)
             prompt_template = prompts[selected_task]
 
             if comparison_mode:
@@ -267,26 +262,28 @@ if input_question:
                 if len(model_names) < 2:
                     st.error("Not enough models available for comparison.")
                 else:
-                    model1 = st.selectbox("Select first model", [None] + model_names, index=0, key="model1")
+                    model1 = st.selectbox("Select first model", ['Please select model'] + model_names, index=0, key="model1")
 
                     remaining_models = [m for m in model_names if m != model1]
-                    model2 = st.selectbox("Select second model", [None] + model_names, index=0, key="model2")
+                    model2 = st.selectbox("Select second model", ['Please select model'] + model_names, index=0, key="model2")
 
-                    if model1 and model2:
-
+                    if model1 != 'Please select model' and model2 != 'Please select model':
                         with col1:
                             st.markdown(f"#### {model1}")
                             placeholder1 = st.empty()
                             content1, run_id1 = generate_output_stream(prompt_template, llm_models[model1],
-                                                                       corrected_texts_list, placeholder1, input_question)
+                                                                       corrected_texts_list, placeholder1,
+                                                                       input_question)
                             # st.button(f"Vote for {model1}", key=f"vote_{model1}")
 
                         with col2:
                             st.markdown(f"#### {model2}")
                             placeholder2 = st.empty()
                             content2, run_id2 = generate_output_stream(prompt_template, llm_models[model2],
-                                                                       corrected_texts_list, placeholder2, input_question)
+                                                                       corrected_texts_list, placeholder2,
+                                                                       input_question)
                             # st.button(f"Vote for {model2}", key=f"vote_{model2}")
+
             else:
                 st.markdown(f'### This is {selected_task.capitalize()}, generated by {config["llm"]["default_model"]}:')
                 placeholder = st.empty()
