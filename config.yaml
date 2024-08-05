@@ -1,0 +1,68 @@
+# LLM configurations
+llm:
+  default_model: 'gpt-4-1106-preview'
+  models:
+    - name: 'gpt-4-1106-preview'
+      provider: 'openai'
+      type: 'ChatOpenAI'
+      temperature: 0.0
+    - name: 'GPT-4o-2024-05-13'
+      provider: 'openai'
+      type: 'ChatOpenAI'
+      temperature: 0.0
+    - name: 'claude-3-5-sonnet-20240620'
+      provider: 'anthropic'
+      type: 'ChatAnthropic'
+      temperature: 0.0
+
+
+# Task configurations
+tasks:
+  summary:
+    primary: 'simple-rag:9388b291'
+    additional: []
+  alert:
+    primary: 'simple-rag'
+    additional: []
+  actor_comparison:
+    primary: 'rag-app'
+    additional: []
+
+# Comparison mode configuration
+comparison_mode:
+  enabled: true
+  offer_models: ['gpt-4-1106-preview', 'GPT-4o-2024-05-13', 'claude-3-5-sonnet-20240620']
+
+# Project indexes
+project_indexes:
+  dem-arm:
+    - 'dem-arm-facebook'
+    - 'dem-arm-telegram'
+    - 'dem-arm-web'
+    - 'dem-arm-youtube'
+  dem-by:
+    - 'dem-by-telegram'
+    - 'dem-by-youtube'
+    - 'dem-by-odnoklassniki'
+    - 'dem-by-vkontakte'
+    - 'dem-by-instagram'
+    - 'dem-by-web'
+    - 'dem-by-whisper-tiktok'
+
+# Tally form configuration
+tally_form:
+  url: 'https://tally.so/embed/wzq1Aa'
+  width: 700
+  height: 800
+
+# Date range configuration
+date_range:
+  default_start: '2024-07-15'
+  default_end: '2024-07-30'
+  min_date: '2020-01-01'
+
+# Langchain configuration
+langchain:
+  tracing_v2: true
+  project: 'rag_app : summarization : production'
+  endpoint: 'https://api.smith.langchain.com'

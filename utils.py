@@ -3,24 +3,80 @@ import streamlit as st
 import plotly.express as px
 import logging
 import os
+import yaml
 
 from elasticsearch import Elasticsearch
 from langchain import hub, callbacks
 from langchain_openai import ChatOpenAI
+from langchain_anthropic import ChatAnthropic
 from elasticsearch import Elasticsearch, BadRequestError
 from elasticsearch.exceptions import NotFoundError
 from angle_emb import AnglE, Prompts
 
-
 logging.basicConfig(level=logging.INFO)
 
+
 def load_config():
+    with open('config.yaml', 'r') as file:
+        return yaml.safe_load(file)
+
+
+def load_es_config():
     es_config = {
         'host': st.secrets['ld_rag']['ELASTIC_HOST'],
         'port': st.secrets['ld_rag']['ELASTIC_PORT'],
         'api_key': st.secrets['ld_rag']['ELASTIC_API']
     }
     return es_config
+
+
+# Load API keys from st.secrets
+
+
+def get_keys(config):
+    try:
+        api_keys = {
+            provider: st.secrets['ld_rag'].get(key_name)
+            for provider, key_name in config['api_keys'].items()
+        }
+        logging.info(f'Loaded api keys successfully.')
+        return api_keys
+    except Exception as e:
+        logging.error(f'Could not load api keys due to error: {e}')
+
+
+def initialize_llm(model_config, api_keys):
+    provider = model_config['provider']
+    model_type = model_config['type']
+    model_name = model_config['name']
+    temperature = model_config['temperature']
+
+    if provider == 'openai' and model_type == 'ChatOpenAI':
+        return ChatOpenAI(
+            temperature=temperature,
+            openai_api_key=api_keys['openai'],
+            model_name=model_name
+        )
+    elif provider == 'anthropic' and model_type == 'ChatAnthropic':
+        return ChatAnthropic(
+            temperature=temperature,
+            anthropic_api_key=api_keys['anthropic'],
+            model_name=model_name
+        )
+    else:
+        raise ValueError(f"Unsupported model type: {model_type} for provider: {provider}")
+
+
+def init_llms(config):
+    llm_models = {}
+    for model in config['llm']['models']:
+        try:
+            llm_models[model['name']] = initialize_llm(model)
+        except ValueError as e:
+            st.warning(f"Could not initialize model {model['name']}: {str(e)}")
+        except Exception as e:
+            st.error(f"An error occurred while initializing model {model['name']}: {str(e)}")
+
 
 def init_llm_params():
     # Init Langchain and Langsmith services
@@ -60,6 +116,21 @@ def set_state_defaults():
         st.session_state.selected_index = None
     if 'compare_categories' not in st.session_state:
         st.session_state.compare_categories = False
+
+
+def generate_output_stream(prompt_url, llm, texts, placeholder, input_question):
+    prompt_template = hub.pull(prompt_url)
+    customer_messages = prompt_template.format_messages(
+        question=input_question,
+        texts=texts
+    )
+    with callbacks.collect_runs() as cb:
+        content = []
+        for chunk in llm.stream(customer_messages):
+            content.append(chunk.content)
+            placeholder.markdown("".join(content))
+        run_id = cb.traced_runs[0].id
+    return "".join(content), run_id
 
 def get_unique_category_values(index_name, field, es_config):
     """
