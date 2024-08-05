@@ -85,6 +85,7 @@ def init_langsmith_params(config):
     os.environ["LANGCHAIN_TRACING_V2"] = config['langchain']['tracing_v2']
     os.environ["LANGCHAIN_PROJECT"] = config['langchain']['project']
     os.environ["LANGCHAIN_ENDPOINT"] = config['langchain']['endpoint']
+    os.environ["LANGCHAIN_API_KEY"] = st.secrets['ld_rag']['LANGCHAIN_API_KEY']
     os.environ["LANGSMITH_ACC"] = st.secrets['ld_rag']['LANGSMITH_ACC']
 
 
