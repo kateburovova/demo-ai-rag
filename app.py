@@ -73,7 +73,7 @@ else:
 # else:
 #     url = f'{os.environ["LANGSMITH_ACC"]}/simple-rag:9388b291'
 #     format_choice = 'Summary'
-prompt_template = hub.pull(url)
+# prompt_template = hub.pull(url)
 
 
 search_option = st.radio(
