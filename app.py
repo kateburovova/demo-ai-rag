@@ -25,8 +25,27 @@ set_state_defaults()
 
 ########## APP start ###########
 st.set_page_config(layout="wide")
+
+logo_url = 'assets/Blue_black_long.png'
+st.image(logo_url,  width=300)
+
 if not check_password():
     st.stop()
+
+# description
+st.markdown('App relies on data, collected and enriched by our team and provides citations for all sources used for '
+            'answers. \n'
+            'If you are running this app from a mobile device, tap on any '
+            'empty space to apply changes to input fields. '
+            'If you experience any technical issues, please [submit the form](https://docs.google.com/forms/d/e/1FAIpQLSfZTr4YoXXsjOOIAMVGYCeGgXd6LOsCQusctJ7hZODaW5HzGQ/viewform?pli=1) by selecting "LD app Technical Issue" for '
+            'the type of request. To give feedback for request output, '
+            'please use the feedback form at the end of the page.')
+
+with open('assets/How_to.md', 'r') as file:
+    markdown_content = file.read()
+
+with st.expander("Learn more about the app"):
+    st.markdown(markdown_content, unsafe_allow_html=True)
 
 # Get input parameters
 st.markdown('### Please select search parameters 🔎')
