@@ -63,6 +63,6 @@ date_range:
 
 # Langchain configuration
 langchain:
-  tracing_v2: true
+  tracing_v2: 'true'
   project: 'rag_app : summarization : production'
   endpoint: 'https://api.smith.langchain.com'
