@@ -66,3 +66,7 @@ langchain:
   tracing_v2: 'true'
   project: 'rag_app : summarization : production'
   endpoint: 'https://api.smith.langchain.com'
+
+# Debug functionality
+debug:
+  display_source_texts: true
