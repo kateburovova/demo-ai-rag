@@ -308,9 +308,10 @@ if input_question:
                 st.text_area("Copy this data:", value=raw_text, height=300)
 
             # Send rating to Tally
-            execution_time = round(end_time - start_time, 2)
-            tally_form_url = f'https://tally.so/embed/{config["tally_form"]["id"]}?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1&run_id={run_id}&time={execution_time}'
-            components.iframe(tally_form_url, width=700, height=800, scrolling=True)
+            if not comparison_mode:
+                execution_time = round(end_time - start_time, 2)
+                tally_form_url = f'https://tally.so/embed/{config["tally_form"]["id"]}?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1&run_id={run_id}&time={execution_time}'
+                components.iframe(tally_form_url, width=700, height=800, scrolling=True)
 
     if st.button('RE-RUN APP'):
         time.sleep(1)
