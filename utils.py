@@ -33,16 +33,17 @@ def load_es_config():
 # Load API keys from st.secrets
 
 
-def get_keys(config):
+def get_keys():
     try:
         api_keys = {
-            provider: st.secrets['ld_rag'].get(key_name)
-            for provider, key_name in config['api_keys'].items()
+            'openai': st.secrets['ld_rag']['OPENAI_KEY_ORG'],
+            'anthropic': st.secrets['ld_rag']['ANTHROPIC_API_KEY']
         }
-        logging.info(f'Loaded api keys successfully.')
+        logging.info('Loaded api keys successfully.')
         return api_keys
     except Exception as e:
         logging.error(f'Could not load api keys due to error: {e}')
+        return {}
 
 
 def initialize_llm(model_config, api_keys):
