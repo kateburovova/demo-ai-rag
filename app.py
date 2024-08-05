@@ -112,8 +112,8 @@ if st.session_state.selected_index:
             "If Any remains selected or no values at all, filtering will not be applied to this field. Start typing "
             "to find the option faster.")
 
-        default_start_date = datetime(config['date_range']['default_start'])
-        default_end_date = datetime(config['date_range']['default_end'])
+        default_start_date = datetime.strptime(config['date_range']['default_start'], '%Y-%m-%d')
+        default_end_date = datetime.strptime(config['date_range']['default_end'], '%Y-%m-%d')
         default_non_null_categories_one = [category for category in category_values_one
                                            if category not in ['Any', None, '']]
         logging.info(f"Default categories_one: {default_non_null_categories_one}")
