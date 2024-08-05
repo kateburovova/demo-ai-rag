@@ -77,6 +77,7 @@ def init_llms(config, api_keys):
             st.warning(f"Could not initialize model {model['name']}: {str(e)}")
         except Exception as e:
             st.error(f"An error occurred while initializing model {model['name']}: {str(e)}")
+    return llm_models
 
 
 def init_llm_params():
