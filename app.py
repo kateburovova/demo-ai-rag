@@ -303,7 +303,7 @@ if input_question:
                 end_time = time.time()
 
             # Display tables
-            st.markdown(f'### These are top {max_doc_num} texts used for generation:')
+            st.markdown(f'### These are top {config["max_doc_num"]} texts used for generation:')
             df = create_dataframe_from_response(response)
             st.dataframe(df)
             display_distribution_charts(df, st.session_state.selected_index)
