@@ -266,7 +266,6 @@ if input_question:
 
             if comparison_mode:
 
-                st.markdown(f"### Comparison Mode Results:")
                 start_time = time.time()
                 # Randomly select two models for comparison
                 model_names = list(llm_models.keys())
@@ -280,18 +279,24 @@ if input_question:
                     col1, col2 = st.columns(2)
 
                     with col1:
-                        st.markdown(f"#### {model1}")
+                        st.markdown(f"## {model1}")
                         placeholder1 = st.empty()
                         content1, run_id1 = generate_output_stream(prompt_template, llm_models[model1],
                                                                    corrected_texts_list, placeholder1, input_question)
 
                     with col2:
-                        st.markdown(f"#### {model2}")
+                        st.markdown(f"## {model2}")
                         placeholder2 = st.empty()
                         content2, run_id2 = generate_output_stream(prompt_template, llm_models[model2],
                                                                    corrected_texts_list, placeholder2, input_question)
 
                 end_time = time.time()
+                tally_form_url = f'https://tally.so/embed/{config["tally_form"]["voting_id"]}?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1&model1_id={model1}&model2_id={model2}'
+                components.iframe(tally_form_url,
+                                  width=config['tally_form']['voting_width'],
+                                  height=config['tally_form']['voting_height'],
+                                  scrolling=True)
+
 
             else:
                 start_time = time.time()
@@ -316,8 +321,11 @@ if input_question:
             # Send rating to Tally
             if not comparison_mode:
                 execution_time = round(end_time - start_time, 2)
-                tally_form_url = f'https://tally.so/embed/{config["tally_form"]["id"]}?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1&run_id={run_id}&time={execution_time}'
-                components.iframe(tally_form_url, width=700, height=800, scrolling=True)
+                tally_form_url = f'https://tally.so/embed/{config["tally_form"]["feedback_id"]}?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1&run_id={run_id}&time={execution_time}'
+                components.iframe(tally_form_url,
+                                  width=config['tally_form']['feedback_width'],
+                                  height=config['tally_form']['feedback_height'],
+                                  scrolling=True)
 
     if st.button('RE-RUN APP'):
         time.sleep(1)

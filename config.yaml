@@ -54,9 +54,13 @@ project_indexes:
 
 # Tally form configuration
 tally_form:
-  id: 'wzq1Aa'
-  width: 700
-  height: 800
+  voting_id: 'w4LB6B'
+  voting_width: 700
+  voting_height: 800
+  feedback_id: 'wzq1Aa'
+  feedback_width: 700
+  feedback_height: 800
+
 
 # Date range configuration
 date_range:
