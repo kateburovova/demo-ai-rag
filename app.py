@@ -291,8 +291,8 @@ if input_question:
                                                                    corrected_texts_list, placeholder2, input_question)
 
                 end_time = time.time()
-                tally_form_url = f'https://tally.so/embed/{config["tally_form"]["voting_id"]}?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1&model1_id={model1}&model2_id={model2}'
-                components.iframe(tally_form_url,
+                voting_form_url = f'https://tally.so/embed/{config["tally_form"]["voting_id"]}?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1&model1_id={model1}&model2_id={model2}'
+                components.iframe(voting_form_url,
                                   width=config['tally_form']['voting_width'],
                                   height=config['tally_form']['voting_height'],
                                   scrolling=True)

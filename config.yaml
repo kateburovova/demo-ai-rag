@@ -56,7 +56,7 @@ project_indexes:
 tally_form:
   voting_id: 'w4LB6B'
   voting_width: 700
-  voting_height: 800
+  voting_height: 500
   feedback_id: 'wzq1Aa'
   feedback_width: 700
   feedback_height: 800
