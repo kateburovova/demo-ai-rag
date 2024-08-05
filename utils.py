@@ -491,6 +491,7 @@ def create_dataframe_from_response(response):
 
         for doc in response['hits']['hits']:
             misc_dict = doc['_source'].get('misc', {})
+            topic_dict = doc['_source'].get('topic', {})
 
             selected_doc = {
                 'date': doc['_source'].get('date', 'None'),
@@ -503,6 +504,7 @@ def create_dataframe_from_response(response):
                 '_domain': doc['_source'].get('_domain', 'None'),
                 'category_one': misc_dict.get('category_one', 'None'),
                 'category_two': misc_dict.get('category_two', 'None'),
+                'topic_id': topic_dict.get('topic_hash_id', 'None'),
                 'id': doc.get('_id', 'None')
             }
             selected_documents.append(selected_doc)
