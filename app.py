@@ -15,7 +15,7 @@ from utils import (display_distribution_charts, populate_default_values, project
                    populate_terms, create_must_term, create_dataframe_from_response, flat_index_list,
                    get_prefixed_fields, set_state_defaults, load_config, load_es_config,
                    get_texts_from_elastic, get_guestion_vector, init_llms, get_keys, generate_output_stream,
-                   init_langsmith_params, pull_prompts)
+                   init_langsmith_params, pull_prompts, get_default_date_range)
 
 # External
 import streamlit as st
@@ -112,8 +112,10 @@ if st.session_state.selected_index:
             "If Any remains selected or no values at all, filtering will not be applied to this field. Start typing "
             "to find the option faster.")
 
-        default_start_date = datetime.strptime(config['date_range']['default_start'], '%Y-%m-%d')
-        default_end_date = datetime.strptime(config['date_range']['default_end'], '%Y-%m-%d')
+        min_date, default_start_date, default_end_date, today = get_default_date_range(config)
+
+        # default_start_date = datetime.strptime(config['date_range']['default_start'], '%Y-%m-%d')
+        # default_end_date = datetime.strptime(config['date_range']['default_end'], '%Y-%m-%d')
         default_non_null_categories_one = [category for category in category_values_one
                                            if category not in ['Any', None, '']]
         logging.info(f"Default categories_one: {default_non_null_categories_one}")
@@ -133,7 +135,7 @@ if st.session_state.selected_index:
         date_range = st.date_input(
             "Select date range",
             value=(default_start_date, default_end_date),
-            min_value=datetime(2020, 1, 1),
+            min_value=min_date,
             max_value=datetime.now() + timedelta(days=365),
         )
 

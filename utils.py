@@ -5,7 +5,7 @@ import logging
 import os
 import yaml
 
-from elasticsearch import Elasticsearch
+from datetime import datetime, timedelta
 from langchain import hub, callbacks
 from langchain_openai import ChatOpenAI
 from langchain_anthropic import ChatAnthropic
@@ -31,7 +31,26 @@ def load_es_config():
     return es_config
 
 
-# Load API keys from st.secrets
+def get_default_date_range(config):
+    """
+    Determine the default date range based on config settings.
+    If default dates are not set in config, use the last 14 days.
+    """
+    min_date = datetime.strptime(config['date_range']['min_date'], '%Y-%m-%d').date()
+    today = datetime.now().date()
+
+    if config['date_range']['default_end'] and config['date_range']['default_start']:
+        default_end_date = datetime.strptime(config['date_range']['default_end'], '%Y-%m-%d').date()
+        default_start_date = datetime.strptime(config['date_range']['default_start'], '%Y-%m-%d').date()
+    else:
+        default_end_date = today
+        default_start_date = today - timedelta(days=13)  # Last 14 days including today
+
+    # Ensure the default dates are not before the min_date
+    default_start_date = max(default_start_date, min_date)
+    default_end_date = max(default_end_date, min_date)
+
+    return min_date, default_start_date, default_end_date, today
 
 
 def get_keys():
