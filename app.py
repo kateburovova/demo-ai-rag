@@ -21,7 +21,7 @@ logging.basicConfig(level=logging.INFO)
 
 es_config = load_es_config()
 config = load_config()
-api_keys = get_keys(config)
+api_keys = get_keys()
 llm_models = init_llms(config)
 set_state_defaults()
 
