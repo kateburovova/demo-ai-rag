@@ -301,7 +301,7 @@ if input_question:
                 content, run_id = generate_output_stream(config['tasks'][selected_task]['primary'],
                                                          llm_models[config['llm']['default_model']],
                                                          corrected_texts_list,
-                                                         placeholder)
+                                                         placeholder, input_question)
             # Display tables
             st.markdown(f'### These are top {max_doc_num} texts used for generation:')
             df = create_dataframe_from_response(response)
