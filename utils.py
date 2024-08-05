@@ -360,24 +360,24 @@ def get_guestion_vector(input_question):
     return question_vector
 
 
-project_indexes = {
-    'dem-arm': [
-        'dem-arm-facebook',
-        'dem-arm-telegram',
-        'dem-arm-web',
-        'dem-arm-youtube'
-    ],
-    'dem-by': [
-        'dem-by-telegram',
-        'dem-by-youtube',
-        'dem-by-odnoklassniki',
-        'dem-by-vkontakte',
-        'dem-by-instagram',
-        'dem-by-web',
-        'dem-by-whisper-tiktok'
-    ]
-}
-flat_index_list = [index for indexes in project_indexes.values() for index in indexes]
+# project_indexes = {
+#     'dem-arm': [
+#         'dem-arm-facebook',
+#         'dem-arm-telegram',
+#         'dem-arm-web',
+#         'dem-arm-youtube'
+#     ],
+#     'dem-by': [
+#         'dem-by-telegram',
+#         'dem-by-youtube',
+#         'dem-by-odnoklassniki',
+#         'dem-by-vkontakte',
+#         'dem-by-instagram',
+#         'dem-by-web',
+#         'dem-by-whisper-tiktok'
+#     ]
+# }
+# flat_index_list = [index for indexes in project_indexes.values() for index in indexes]
 
 
 @st.cache_data(ttl=3600, show_spinner=False)  # Cache for 1 hour

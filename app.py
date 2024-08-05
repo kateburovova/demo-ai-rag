@@ -6,13 +6,12 @@ import random
 import threading
 
 from datetime import datetime, timedelta
-
 from dateutil.relativedelta import relativedelta
 
 # Internal
 from authentificate import check_password
 from utils import (display_distribution_charts, populate_default_values, project_indexes,
-                   populate_terms, create_must_term, create_dataframe_from_response, flat_index_list,
+                   populate_terms, create_must_term, create_dataframe_from_response,
                    get_prefixed_fields, set_state_defaults, load_config, load_es_config,
                    get_texts_from_elastic, get_guestion_vector, init_llms, get_keys, generate_output_stream,
                    init_langsmith_params, pull_prompts, get_default_date_range)
@@ -79,6 +78,7 @@ search_option = st.radio(
     ['All Project Indexes', 'Specific Indexes'])
 
 if search_option == 'Specific Indexes':
+    flat_index_list = [index for project in config['project_indexes'].values() for index in project]
     selected_indexes = st.multiselect('Please choose one or more indexes', flat_index_list, default=None,
                                       placeholder="Select one or more indexes")
     if selected_indexes:
@@ -87,16 +87,16 @@ if search_option == 'Specific Indexes':
     else:
         st.session_state.selected_index = None
 else:
-    if len(project_indexes.keys()) == 1:  # If we have only 1 project, we don't offer choice of projects
-        selected_indexes = list(project_indexes.values())[0]
+    if len(config['project_indexes']) == 1:  # If we have only 1 project, we don't offer choice of projects
+        selected_indexes = list(config['project_indexes'].values())[0]
         st.session_state.selected_index = ",".join(selected_indexes)
         st.write(f"We'll search in: {', '.join(selected_indexes)}")
 
     else:
-        project_choice = st.selectbox('Please choose a project', list(project_indexes.keys()), index=None,
+        project_choice = st.selectbox('Please choose a project', list(config['project_indexes'].keys()), index=None,
                                       placeholder="Select project")
         if project_choice:
-            selected_indexes = project_indexes[project_choice]
+            selected_indexes = config['project_indexes'][project_choice]
             st.session_state.selected_index = ",".join(selected_indexes)
             st.write(f"We'll search in: {', '.join(selected_indexes)}")
 
@@ -274,7 +274,7 @@ if input_question:
                 else:
                     model1, model2 = random.sample(model_names, 2)
 
-                    st.write(f"Comparing models: {model1} and {model2}")
+                    # st.write(f"Comparing models: {model1} and {model2}")
 
                     col1, col2 = st.columns(2)
 
