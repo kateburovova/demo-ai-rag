@@ -6,10 +6,13 @@ angle-emb>=0.4
 elasticsearch
 python-dotenv
 langchain
-langchain_openai
+#langchain_openai
 langchainhub
 langchain-community
 plotly
+PyYAML
+langchain-openai
+langchain-anthropic
 #tenacity==8.3.0
 #tenacity>=8.5.0
 #urllib3>=2.2.2
