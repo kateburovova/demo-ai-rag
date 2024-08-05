@@ -129,6 +129,7 @@ def pull_prompts(config):
 
     return prompts
 
+
 def generate_output_stream(prompt_template, llm, texts, placeholder, input_question):
     customer_messages = prompt_template.format_messages(
         question=input_question,
@@ -141,6 +142,7 @@ def generate_output_stream(prompt_template, llm, texts, placeholder, input_quest
             placeholder.markdown("".join(content))
         run_id = cb.traced_runs[0].id
     return "".join(content), run_id
+
 
 def get_unique_category_values(index_name, field, es_config):
     """
