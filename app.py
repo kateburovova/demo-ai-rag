@@ -62,7 +62,7 @@ if config['comparison_mode']['enabled']:
 else:
     comparison_mode = False
 
-llm_models = init_llms(config)
+# llm_models = init_llms(config)
 
 # format_choice = st.radio("Choose the preferred output format:", ['Summary', 'Alert', 'Actor Comparison'])
 # if format_choice == 'Alert':
