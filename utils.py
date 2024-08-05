@@ -288,10 +288,10 @@ def get_category_field():
         return 'category.keyword'
 
 
-def get_texts_from_elastic(input_question, question_vector, must_term, es_config, max_doc_num):
+def get_texts_from_elastic(input_question, question_vector, must_term, es_config, config):
     try:
         texts_list = []
-        st.write(f'Running search for {max_doc_num} relevant posts for question: {input_question}')
+        st.write(f'Running search for {config["max_doc_num"]} relevant posts for question: {input_question}')
         try:
             es = Elasticsearch(f'https://{es_config["host"]}:{es_config["port"]}', api_key=es_config["api_key"],
                                request_timeout=600)
@@ -299,11 +299,11 @@ def get_texts_from_elastic(input_question, question_vector, must_term, es_config
             st.error(f'Failed to connect to Elasticsearch: {str(e)}')
 
         response = es.search(index=st.session_state.selected_index,
-                             size=max_doc_num,
+                             size=config['max_doc_num'],
                              knn={"field": "embeddings.WhereIsAI/UAE-Large-V1",
                                   "query_vector": question_vector,
-                                  "k": max_doc_num,
-                                  "num_candidates": 10000,
+                                  "k": config['max_doc_num'],
+                                  "num_candidates": config['num_candidates'],
                                   "filter": {
                                       "bool": {
                                           "must": must_term,
@@ -358,26 +358,6 @@ def get_guestion_vector(input_question):
     vec = angle.encode({'text': input_question}, to_numpy=True, prompt=Prompts.C)
     question_vector = vec.tolist()[0]
     return question_vector
-
-
-# project_indexes = {
-#     'dem-arm': [
-#         'dem-arm-facebook',
-#         'dem-arm-telegram',
-#         'dem-arm-web',
-#         'dem-arm-youtube'
-#     ],
-#     'dem-by': [
-#         'dem-by-telegram',
-#         'dem-by-youtube',
-#         'dem-by-odnoklassniki',
-#         'dem-by-vkontakte',
-#         'dem-by-instagram',
-#         'dem-by-web',
-#         'dem-by-whisper-tiktok'
-#     ]
-# }
-# flat_index_list = [index for indexes in project_indexes.values() for index in indexes]
 
 
 @st.cache_data(ttl=3600, show_spinner=False)  # Cache for 1 hour

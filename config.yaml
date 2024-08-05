@@ -77,3 +77,7 @@ langchain:
 # Debug functionality
 debug:
   display_source_texts: true
+
+# KNN search params
+max_doc_num : 30
+num_candidates : 10000

@@ -1,12 +1,9 @@
 # Base
-import os
 import time
 import logging
 import random
-import threading
 
 from datetime import datetime, timedelta
-from dateutil.relativedelta import relativedelta
 
 # Internal
 from authentificate import check_password
@@ -253,13 +250,11 @@ if input_question:
 
         # Run search
         if st.button('RUN SEARCH', type="primary"):
-            # start_time = time.time()
-            max_doc_num = 30
             corrected_texts_list, response = get_texts_from_elastic(input_question=input_question,
                                                                     question_vector=question_vector,
                                                                     must_term=must_term,
                                                                     es_config=es_config,
-                                                                    max_doc_num=max_doc_num)
+                                                                    config=config)
             prompt_template = prompts[selected_task]
 
             st.markdown(f'### This is {selected_label}, generated based on relevant data:')
