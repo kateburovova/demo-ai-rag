@@ -6,7 +6,7 @@ llm:
       provider: 'openai'
       type: 'ChatOpenAI'
       temperature: 0.0
-    - name: 'GPT-4o-2024-05-13'
+    - name: 'gpt-4o'
       provider: 'openai'
       type: 'ChatOpenAI'
       temperature: 0.0
