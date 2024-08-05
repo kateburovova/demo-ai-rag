@@ -257,46 +257,6 @@ if input_question:
             prompt_template = prompts[selected_task]
 
             if comparison_mode:
-                # st.markdown(f"### Comparison Mode Results:")
-                #
-                # # Randomly select two models for comparison
-                # model_names = list(llm_models.keys())
-                # if len(model_names) < 2:
-                #     st.error("Not enough models available for comparison.")
-                # else:
-                #     model1, model2 = random.sample(model_names, 2)
-                #
-                #     st.write(f"Comparing models: {model1} and {model2}")
-                #
-                #     col1, col2 = st.columns(2)
-                #
-                #     # Create placeholders for both models
-                #     with col1:
-                #         st.markdown(f"#### {model1}")
-                #         placeholder1 = st.empty()
-                #
-                #     with col2:
-                #         st.markdown(f"#### {model2}")
-                #         placeholder2 = st.empty()
-                #
-                #
-                #     # Define a function to generate output for a model
-                #     def generate_for_model(model, placeholder):
-                #         content, run_id = generate_output_stream(prompt_template, llm_models[model],
-                #                                                  corrected_texts_list, placeholder, input_question)
-                #         return content, run_id
-                #
-                #
-                #     # Create and start threads for both models
-                #     thread1 = threading.Thread(target=generate_for_model, args=(model1, placeholder1))
-                #     thread2 = threading.Thread(target=generate_for_model, args=(model2, placeholder2))
-                #
-                #     thread1.start()
-                #     thread2.start()
-                #
-                #     # Wait for both threads to complete
-                #     thread1.join()
-                #     thread2.join()
 
                 st.markdown(f"### Comparison Mode Results:")
 
