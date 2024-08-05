@@ -7,6 +7,8 @@ import threading
 
 from datetime import datetime, timedelta
 
+from dateutil.relativedelta import relativedelta
+
 # Internal
 from authentificate import check_password
 from utils import (display_distribution_charts, populate_default_values, project_indexes,
@@ -110,8 +112,8 @@ if st.session_state.selected_index:
             "If Any remains selected or no values at all, filtering will not be applied to this field. Start typing "
             "to find the option faster.")
 
-        default_start_date = datetime(2024, 7, 15)
-        default_end_date = datetime(2024, 7, 30)
+        default_start_date = datetime(config['date_range']['default_start'])
+        default_end_date = datetime(config['date_range']['default_end'])
         default_non_null_categories_one = [category for category in category_values_one
                                            if category not in ['Any', None, '']]
         logging.info(f"Default categories_one: {default_non_null_categories_one}")

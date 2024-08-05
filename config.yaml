@@ -62,7 +62,7 @@ tally_form:
 date_range:
   default_start: '2024-07-15'
   default_end: '2024-07-30'
-  min_date: '2020-01-01'
+  #min_date: '2020-01-01'
 
 # Langchain configuration
 langchain:
