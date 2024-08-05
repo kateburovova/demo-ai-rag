@@ -115,11 +115,13 @@ def set_state_defaults():
 
 def pull_prompts(config):
     langsmith_acc = os.environ.get("LANGSMITH_ACC", "")
+    logging.info(f'langsmith_acc: {langsmith_acc}')
     prompts = {}
 
     for task, task_config in config['tasks'].items():
         prompt_id = task_config['primary']
         full_prompt_url = f'https://api.hub.langchain.com/{langsmith_acc}/{prompt_id}'
+        logging.info(f'full_prompt_url: {full_prompt_url}')
 
         try:
             prompt_template = hub.pull(full_prompt_url)
