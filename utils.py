@@ -120,11 +120,11 @@ def pull_prompts(config):
 
     for task, task_config in config['tasks'].items():
         prompt_id = task_config['primary']
-        full_prompt_url = f'{langsmith_acc}/{prompt_id}'
-        logging.info(f'full_prompt_url: {full_prompt_url}')
+        full_prompt_id = f'{langsmith_acc}/{prompt_id}'
+        logging.info(f'full_prompt_id: {full_prompt_id}')
 
         try:
-            prompt_template = hub.pull(full_prompt_url)
+            prompt_template = hub.pull(full_prompt_id)
             prompts[task] = prompt_template
             logging.info(f"Successfully pulled prompt for task: {task}")
 
