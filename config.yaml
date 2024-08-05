@@ -51,7 +51,7 @@ project_indexes:
 
 # Tally form configuration
 tally_form:
-  url: 'https://tally.so/embed/wzq1Aa'
+  id: 'wzq1Aa'
   width: 700
   height: 800
 
