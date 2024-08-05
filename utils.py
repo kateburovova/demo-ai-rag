@@ -68,11 +68,11 @@ def initialize_llm(model_config, api_keys):
         raise ValueError(f"Unsupported model type: {model_type} for provider: {provider}")
 
 
-def init_llms(config):
+def init_llms(config, api_keys):
     llm_models = {}
     for model in config['llm']['models']:
         try:
-            llm_models[model['name']] = initialize_llm(model)
+            llm_models[model['name']] = initialize_llm(model, api_keys)
         except ValueError as e:
             st.warning(f"Could not initialize model {model['name']}: {str(e)}")
         except Exception as e:
