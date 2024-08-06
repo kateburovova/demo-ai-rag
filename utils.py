@@ -766,41 +766,37 @@ def display_topic_dropdown_and_info(df):
     """
     Display a dropdown in Streamlit with topic hashes and counts as labels,
     and print the summary and narratives for the chosen option.
+    Uses Streamlit's session state and a callback to minimize reruns.
+
     :param df: DataFrame containing 'topic_ids', 'count', 'summary', and 'narratives' columns
     """
     # Create dropdown options
     options = [f"{row['topic_ids']} (Count: {row['count']})" for _, row in df.iterrows()]
 
-    # Create a container for the dropdown
-    dropdown_container = st.empty()
+    # Initialize session state variables
+    if 'selected_option' not in st.session_state:
+        st.session_state.selected_option = options[0] if options else None
+    if 'summary' not in st.session_state:
+        st.session_state.summary = ""
+    if 'narratives' not in st.session_state:
+        st.session_state.narratives = ""
 
-    # Create a container for the information display
-    info_container = st.container()
-
-    # Use a session state variable to track if the selection has changed
-    if 'previous_selection' not in st.session_state:
-        st.session_state.previous_selection = options[0] if options else None
+    def on_change():
+        selected_topic_id = st.session_state.selected_option.split(" (Count:")[0]
+        selected_row = df[df['topic_ids'] == selected_topic_id].iloc[0]
+        st.session_state.summary = selected_row['summary'] if pd.notna(
+            selected_row['summary']) else "No summary available"
+        st.session_state.narratives = selected_row['narratives'] if pd.notna(
+            selected_row['narratives']) else "No narratives available"
 
     # Display the dropdown
-    selected_option = dropdown_container.selectbox("Choose a topic:", options, index=options.index(
-        st.session_state.previous_selection) if st.session_state.previous_selection in options else 0)
+    st.selectbox("Choose a topic:", options, key='selected_option', on_change=on_change)
 
-    # Check if the selection has changed
-    if selected_option != st.session_state.previous_selection:
-        st.session_state.previous_selection = selected_option
+    # Display the information
+    st.subheader("Summary")
+    st.write(st.session_state.summary)
 
-        # Extract the topic_id from the selected option
-        selected_topic_id = selected_option.split(" (Count:")[0]
-
-        # Find the corresponding row in the DataFrame
-        selected_row = df[df['topic_ids'] == selected_topic_id].iloc[0]
-
-        # Update the information display
-        with info_container:
-            st.subheader("Summary")
-            st.write(selected_row['summary'] if pd.notna(selected_row['summary']) else "No summary available")
-
-            st.subheader("Narratives")
-            st.write(selected_row['narratives'] if pd.notna(selected_row['narratives']) else "No narratives available")
+    st.subheader("Narratives")
+    st.write(st.session_state.narratives)
 
 
