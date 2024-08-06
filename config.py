@@ -1,4 +1,6 @@
 import pydantic
+import os
+import yaml
 from pydantic_settings import BaseSettings
 from typing import Dict, Any, List, Optional
 
@@ -46,4 +48,25 @@ class Config(BaseSettings):
         env_file_encoding = "yaml"
 
 
-config = Config()
+def load_config():
+    # Get the directory of the current file
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    config_path = os.path.join(current_dir, 'config.yaml')
+
+    try:
+        with open(config_path, 'r') as file:
+            config_dict = yaml.safe_load(file)
+        return Config(**config_dict)
+    except FileNotFoundError:
+        print(
+            f"Config file not found at {config_path}. Please ensure config.yaml is in the same directory as config.py.")
+        raise
+    except yaml.YAMLError as e:
+        print(f"Error parsing the config file: {e}")
+        raise
+    except Exception as e:
+        print(f"An unexpected error occurred while loading the config: {e}")
+        raise
+
+
+config = load_config()
