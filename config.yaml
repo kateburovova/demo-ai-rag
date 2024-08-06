@@ -75,8 +75,10 @@ langchain:
   endpoint: 'https://api.smith.langchain.com'
 
 # Debug functionality
-debug:
+misc_display_options:
   display_source_texts: true
+  display_topic_data: true
+  display_issue_selector: true
 
 # KNN search params
 max_doc_num : 30

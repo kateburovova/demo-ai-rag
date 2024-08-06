@@ -192,38 +192,40 @@ else:
 
 logging.info(f"2. Session state: {st.session_state}")
 
-if issues_fields:
-    if st.button('Click to define issues') or st.session_state.show_issues_form:
-        st.session_state.show_issues_form = True
-        with st.form("Tap to define additional filtering by issue"):
-            st.markdown("Edit at least one of the following thresholds to start filtering. "
-                        "Any number of thresholds can be set simultaneously. "
-                        "Editing several thresholds will result in filtering by at least one match to any of them (not all together).")
+if config['misc_display_options']['display_issue_selector']:
+    if issues_fields:
+        if st.button('Click to define issues') or st.session_state.show_issues_form:
+            st.session_state.show_issues_form = True
+            with st.form("Tap to define additional filtering by issue"):
+                st.markdown("Edit at least one of the following thresholds to start filtering. "
+                            "Any number of thresholds can be set simultaneously. "
+                            "Editing several thresholds will result in filtering by at least one match to any of them "
+                            "(not all together).")
 
-            for field in issues_fields:
-                # Use session state to remember the slider values
-                if field not in st.session_state:
-                    st.session_state[field] = (0.0, 0.0)
+                for field in issues_fields:
+                    # Use session state to remember the slider values
+                    if field not in st.session_state:
+                        st.session_state[field] = (0.0, 0.0)
 
-                min_value, max_value = st.slider(
-                    f"Threshold range for {field}",
-                    min_value=0.0,
-                    max_value=1.0,
-                    value=st.session_state[field],
-                    step=0.05
-                )
-                # Update session state
-                st.session_state[field] = (min_value, max_value)
+                    min_value, max_value = st.slider(
+                        f"Threshold range for {field}",
+                        min_value=0.0,
+                        max_value=1.0,
+                        value=st.session_state[field],
+                        step=0.05
+                    )
+                    # Update session state
+                    st.session_state[field] = (min_value, max_value)
 
-            submitted_issues = st.form_submit_button("Save my choice", type="primary")
-            if submitted_issues:
-                st.session_state.thresholds_dict = {
-                    field: f"{st.session_state[field][0]}:{st.session_state[field][1]}"
-                    for field in issues_fields
-                    if st.session_state[field] != (0.0, 0.0)
-                }
-                logging.info(f"Issue terms: {st.session_state.thresholds_dict}")
-    logging.info(f"3. Session state: {st.session_state}")
+                submitted_issues = st.form_submit_button("Save my choice", type="primary")
+                if submitted_issues:
+                    st.session_state.thresholds_dict = {
+                        field: f"{st.session_state[field][0]}:{st.session_state[field][1]}"
+                        for field in issues_fields
+                        if st.session_state[field] != (0.0, 0.0)
+                    }
+                    logging.info(f"Issue terms: {st.session_state.thresholds_dict}")
+        logging.info(f"3. Session state: {st.session_state}")
 
 # Create prompt vector
 st.markdown('### Please enter your question')
@@ -309,17 +311,17 @@ if input_question:
             st.dataframe(df)
             display_distribution_charts(df, st.session_state.selected_index)
 
-            # Display summary and narratives for featured topics
-            topic_count_df = get_topic_counts(response)
-            if not topic_count_df.empty:
-                topic_indexes = infer_topic_index_names(st.session_state.selected_index)
-                summary_topic_df = get_summary_and_narratives(topic_count_df, topic_indexes, es_config)
-                st.markdown("### Topics")
-                st.dataframe(summary_topic_df)
-            else:
-                st.write('#### No topics with summaries were found.')
+            if config['misc_display_options']['display_topic_data']:
+                topic_count_df = get_topic_counts(response)
+                if not topic_count_df.empty:
+                    topic_indexes = infer_topic_index_names(st.session_state.selected_index)
+                    summary_topic_df = get_summary_and_narratives(topic_count_df, topic_indexes, es_config)
+                    st.markdown("### Topics")
+                    st.dataframe(summary_topic_df)
+                else:
+                    st.write('#### No topics with summaries were found.')
 
-            if config['debug']['display_source_texts']:
+            if config['misc_display_options']['display_source_texts']:
                 st.markdown("### Raw Data for Copying:")
                 raw_text = str(corrected_texts_list)
                 st.text_area("Copy this data:", value=raw_text, height=300)
