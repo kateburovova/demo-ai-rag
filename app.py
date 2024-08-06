@@ -23,7 +23,6 @@ import streamlit.components.v1 as components
 
 logging.basicConfig(level=logging.INFO)
 es_config = load_es_config()
-# config = load_config()
 api_keys = get_keys()
 llm_models = init_llms(config, api_keys)
 init_langsmith_params(config)
@@ -61,7 +60,7 @@ st.markdown('### Please select search parameters 🔎')
 
 # Get format and pull relevant prompt
 task_options = list(config.tasks.keys())
-label_options = [config.tasks[task]['label'] for task in task_options]
+label_options = [config.tasks.task['label'] for task in task_options]
 selected_label = st.radio("Choose the preferred output format:", label_options)
 selected_task = task_options[label_options.index(selected_label)]
 
@@ -196,7 +195,7 @@ else:
 
 logging.info(f"2. Session state: {st.session_state}")
 
-if config.misc_display_options['display_issue_selector']:
+if config.misc_display_options.display_issue_selector:
     if issues_fields:
         if st.button('Click to define issues') or st.session_state.show_issues_form:
             st.session_state.show_issues_form = True
@@ -293,28 +292,28 @@ if input_question:
                                                                    corrected_texts_list, placeholder2, input_question)
 
                 end_time = time.time()
-                voting_form_url = f'https://tally.so/embed/{config["tally_form"]["voting_id"]}?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1&model1_id={model1}&model2_id={model2}'
+                voting_form_url = f'https://tally.so/embed/{config.tally_form.voting_id}?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1&model1_id={model1}&model2_id={model2}'
                 components.iframe(voting_form_url,
-                                  width=config.tally_form['voting_width'],
-                                  height=config.tally_form['voting_height'],
+                                  width=config.tally_form.voting_width,
+                                  height=config.tally_form.voting_height,
                                   scrolling=True)
 
             else:
                 start_time = time.time()
                 placeholder = st.empty()
                 content, run_id = generate_output_stream(prompt_template,
-                                                         llm_models[config.llm['default_model']],
+                                                         llm_models[config.llm.default_model],
                                                          corrected_texts_list,
                                                          placeholder, input_question)
                 end_time = time.time()
 
             # Display tables
-            st.markdown(f'### These are top {config["max_doc_num"]} texts used for generation:')
+            st.markdown(f'### These are top {config.max_doc_num} texts used for generation:')
             df = create_dataframe_from_response(response)
             st.dataframe(df)
             display_distribution_charts(df, st.session_state.selected_index)
 
-            if config.misc_display_options['display_topic_data']:
+            if config.misc_display_options.display_topic_data:
                 topic_count_df = get_topic_counts(response)
                 if not topic_count_df.empty:
                     topic_indexes = infer_topic_index_names(st.session_state.selected_index)
@@ -325,7 +324,7 @@ if input_question:
                 else:
                     st.write('#### No topics with summaries were found.')
 
-            if config.misc_display_options['display_source_texts']:
+            if config.misc_display_options.display_source_texts:
                 st.markdown("### Raw Data for Copying:")
                 raw_text = str(corrected_texts_list)
                 st.text_area("Copy this data:", value=raw_text, height=300)
@@ -333,10 +332,10 @@ if input_question:
             # Send rating to Tally
             if not comparison_mode:
                 execution_time = round(end_time - start_time, 2)
-                tally_form_url = f'https://tally.so/embed/{config.tally_form["feedback_id"]}?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1&run_id={run_id}&time={execution_time}'
+                tally_form_url = f'https://tally.so/embed/{config.tally_form.feedback_id}?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1&run_id={run_id}&time={execution_time}'
                 components.iframe(tally_form_url,
-                                  width=config.tally_form['feedback_width'],
-                                  height=config.tally_form['feedback_height'],
+                                  width=config.tally_form.feedback_width,
+                                  height=config.tally_form.feedback_height,
                                   scrolling=True)
 
     if st.button('RE-RUN APP'):

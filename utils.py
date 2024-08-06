@@ -37,12 +37,12 @@ def get_default_date_range(config):
     Determine the default date range based on config settings.
     If default dates are not set in config, use the last 14 days.
     """
-    min_date = datetime.strptime(config['date_range']['min_date'], '%Y-%m-%d').date()
+    min_date = datetime.strptime(config.date_range.min_date, '%Y-%m-%d').date()
     today = datetime.now().date()
 
-    if config.date_range['default_end'] and config.date_range['default_start']:
-        default_end_date = datetime.strptime(config.date_range['default_end'], '%Y-%m-%d').date()
-        default_start_date = datetime.strptime(config.date_range['default_start'], '%Y-%m-%d').date()
+    if config.date_range['default_end'] and config.date_range.default_start:
+        default_end_date = datetime.strptime(config.date_range.default_end, '%Y-%m-%d').date()
+        default_start_date = datetime.strptime(config.date_range.default_start, '%Y-%m-%d').date()
     else:
         default_end_date = today
         default_start_date = today - timedelta(days=13)  # Last 14 days including today
@@ -91,7 +91,7 @@ def initialize_llm(model_config, api_keys):
 
 def init_llms(config, api_keys):
     llm_models = {}
-    for model in config.llm['models']:
+    for model in config.llm.models:
         try:
             llm_models[model['name']] = initialize_llm(model, api_keys)
         except ValueError as e:
@@ -102,9 +102,9 @@ def init_llms(config, api_keys):
 
 
 def init_langsmith_params(config):
-    os.environ["LANGCHAIN_TRACING_V2"] = config.langchain['tracing_v2']
-    os.environ["LANGCHAIN_PROJECT"] = config.langchain['project']
-    os.environ["LANGCHAIN_ENDPOINT"] = config.langchain['endpoint']
+    os.environ["LANGCHAIN_TRACING_V2"] = config.langchain.tracing_v2
+    os.environ["LANGCHAIN_PROJECT"] = config.langchain.project
+    os.environ["LANGCHAIN_ENDPOINT"] = config.langchain.endpoint
     os.environ["LANGCHAIN_API_KEY"] = st.secrets['ld_rag']['LANGCHAIN_API_KEY']
     os.environ["LANGSMITH_ACC"] = st.secrets['ld_rag']['LANGSMITH_ACC']
 
@@ -304,7 +304,7 @@ def get_texts_from_elastic(input_question, question_vector, must_term, es_config
                                  size=config.max_doc_num,
                                  knn={"field": "embeddings.WhereIsAI/UAE-Large-V1",
                                       "query_vector": question_vector,
-                                      "k": config['max_doc_num'],
+                                      "k": config.max_doc_num,
                                       "num_candidates": config.num_candidates,
                                       "filter": {
                                           "bool": {
