@@ -311,7 +311,7 @@ if input_question:
 
             # Display summary and narratives for featured topics
             topic_count_df = get_topic_counts(response)
-            if topic_count_df:
+            if not topic_count_df.empty:
                 topic_indexes = infer_topic_index_names(st.session_state.selected_index)
                 summary_topic_df = get_summary_and_narratives(topic_count_df, topic_indexes, es_config)
                 st.title("Topics")
