@@ -119,8 +119,10 @@ if st.session_state.selected_index:
         logging.info(f"Default categories_one: {default_non_null_categories_one}")
 
         if "dem-arm" or "ru-balkans" in st.session_state.selected_index:
+            logging.info(f"Special category indexes detected")
             st.session_state.use_base_category = False
         else:
+            logging.info(f"No special category indexes detected")
             st.session_state.use_base_category = True
 
         if st.session_state.compare_categories and st.session_state.use_base_category:

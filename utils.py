@@ -18,11 +18,6 @@ from config import Config, config
 logging.basicConfig(level=logging.INFO)
 
 
-# def load_config():
-#     with open('config.yaml', 'r') as file:
-#         return yaml.safe_load(file)
-
-
 def load_es_config():
     es_config = {
         'host': st.secrets['ld_rag']['ELASTIC_HOST'],
