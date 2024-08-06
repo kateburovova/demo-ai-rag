@@ -665,8 +665,10 @@ def get_topic_counts(response):
 
 
 def extract_prefix(index_name):
+    platform_names = ['tiktok', 'facebook', 'twitter', 'whisper', 'instagram', 'telegram', 'odnoklassniki', 'vkontakte']
     parts = index_name.split('-')
-    return '-'.join(parts[:-1])
+    parts_cleaned = [part for part in parts if part not in platform_names]
+    return '-'.join(parts_cleaned[:-1])
 
 
 def infer_topic_index_names(index_string):
