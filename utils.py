@@ -325,6 +325,7 @@ def get_texts_from_elastic(input_question, question_vector, must_term, es_config
         for doc in response['hits']['hits']:
             if '.' in category_field:
                 parts = category_field.split('.')
+                logging.info(f'Part {parts[0], parts[1]}')
                 category = doc['_source'].get(parts[0], {}).get(parts[1], 'Unknown')
             else:
                 category = doc['_source'].get(category_field, 'Unknown')
