@@ -68,10 +68,10 @@ def get_keys():
 
 
 def initialize_llm(model_config, api_keys):
-    provider = model_config['provider']
-    model_type = model_config['type']
-    model_name = model_config['name']
-    temperature = model_config['temperature']
+    provider = model_config.provider
+    model_type = model_config.type
+    model_name = model_config.name
+    temperature = model_config.temperature
 
     if provider == 'openai' and model_type == 'ChatOpenAI':
         return ChatOpenAI(
@@ -93,11 +93,11 @@ def init_llms(config, api_keys):
     llm_models = {}
     for model in config.llm.models:
         try:
-            llm_models[model['name']] = initialize_llm(model, api_keys)
+            llm_models[model.name] = initialize_llm(model, api_keys)
         except ValueError as e:
-            st.warning(f"Could not initialize model {model['name']}: {str(e)}")
+            st.warning(f"Could not initialize model {model.name}: {str(e)}")
         except Exception as e:
-            st.error(f"An error occurred while initializing model {model['name']}: {str(e)}")
+            st.error(f"An error occurred while initializing model {model.name}: {str(e)}")
     return llm_models
 
 

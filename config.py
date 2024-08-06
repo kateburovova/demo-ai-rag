@@ -31,8 +31,20 @@ class MiscDisplayOptions(BaseModel):
     display_issue_selector: bool
 
 
+class LLMModel(BaseModel):
+    name: str
+    provider: str
+    type: str
+    temperature: float
+
+
+class LLM(BaseModel):
+    default_model: str
+    models: List[LLMModel]
+
+
 class Config(BaseSettings):
-    llm: Dict[str, Any]
+    llm: LLM
     tasks: Dict[str, Dict[str, Any]]
     project_indexes: Dict[str, List[str]]
     comparison_mode: ComparisonMode
