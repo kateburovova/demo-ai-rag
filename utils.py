@@ -504,7 +504,6 @@ def create_dataframe_from_response(response):
                 '_domain': doc['_source'].get('_domain', 'None'),
                 'category_one': misc_dict.get('category_one', 'None'),
                 'category_two': misc_dict.get('category_two', 'None'),
-                'topic_id': topic_dict.get('topic_hash_id', 'None'),
                 'id': doc.get('_id', 'None')
             }
             selected_documents.append(selected_doc)

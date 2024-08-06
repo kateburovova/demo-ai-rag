@@ -76,9 +76,9 @@ langchain:
 
 # Debug functionality
 misc_display_options:
-  display_source_texts: false
-  display_topic_data: false
-  display_issue_selector: false
+  display_source_texts: true
+  display_topic_data: true
+  display_issue_selector: true
 
 # KNN search params
 max_doc_num : 30
