@@ -260,7 +260,7 @@ if input_question:
                                                                     config=config)
             prompt_template = prompts[selected_task]
 
-            st.markdown(f'### This is {selected_label}, generated based on relevant data:')
+            st.markdown(f'### {selected_label}:')
 
             if comparison_mode:
 
