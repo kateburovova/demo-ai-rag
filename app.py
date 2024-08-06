@@ -69,7 +69,7 @@ if selected_task == 'actor_comparison':
     st.session_state.compare_categories = True
 
 # Offer comparison mode if enabled in config
-if config.comparison_mode['enabled']:
+if config.comparison_mode.enabled:
     comparison_mode = st.checkbox("Enable comparison mode")
 else:
     comparison_mode = False
