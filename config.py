@@ -1,4 +1,5 @@
-from pydantic import BaseSettings
+import pydantic
+from pydantic_settings import BaseSettings
 from typing import Dict, Any, List, Optional
 
 

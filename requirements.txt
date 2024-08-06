@@ -13,3 +13,4 @@ PyYAML
 langchain-openai
 langchain-anthropic
 pydantic
+pydantic-settings
