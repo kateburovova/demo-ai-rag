@@ -651,7 +651,8 @@ def get_topic_counts(response):
                                                              and isinstance(topic, dict)
                                                              and 'topic_hash_id' in topic]))
         logging.info(f'Retrieved {len(df_selected_fields)} topics.')
-        return df_selected_fields['topic_ids'].explode().value_counts()
+        df_topics = df_selected_fields['topic_ids'].explode().value_counts().reset_index()
+        return df_topics
 
     except Exception as e:
         logging.error(f"An error occurred: {e}")
