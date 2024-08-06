@@ -706,6 +706,7 @@ def get_summary_and_narratives(df, index_name, es_config):
     except Exception as e:
         logging.error(f'Failed to connect to Elasticsearch: {str(e)}')
 
+    st.write('Searching for relevant topics, please wait...')
     def query_es(topic_hash_id):
         query = {
             "query": {
