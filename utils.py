@@ -492,7 +492,6 @@ def create_dataframe_from_response(response):
 
         for doc in response['hits']['hits']:
             misc_dict = doc['_source'].get('misc', {})
-            topic_dict = doc['_source'].get('topic', {})
 
             selected_doc = {
                 'date': doc['_source'].get('date', 'None'),
