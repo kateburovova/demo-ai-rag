@@ -298,22 +298,21 @@ def get_texts_from_elastic(input_question, question_vector, must_term, es_config
         except Exception as e:
             st.error(f'Failed to connect to Elasticsearch: {str(e)}')
 
-        st.write("Searching for documents, please wait...")
-
-        response = es.search(index=st.session_state.selected_index,
-                             size=config['max_doc_num'],
-                             knn={"field": "embeddings.WhereIsAI/UAE-Large-V1",
-                                  "query_vector": question_vector,
-                                  "k": config['max_doc_num'],
-                                  "num_candidates": config['num_candidates'],
-                                  "filter": {
-                                      "bool": {
-                                          "must": must_term,
-                                          "must_not": [{"term": {"type": "comment"}}]
+        with st.spinner("Searching for relevant documents, please wait ..."):
+            response = es.search(index=st.session_state.selected_index,
+                                 size=config['max_doc_num'],
+                                 knn={"field": "embeddings.WhereIsAI/UAE-Large-V1",
+                                      "query_vector": question_vector,
+                                      "k": config['max_doc_num'],
+                                      "num_candidates": config['num_candidates'],
+                                      "filter": {
+                                          "bool": {
+                                              "must": must_term,
+                                              "must_not": [{"term": {"type": "comment"}}]
+                                          }
                                       }
-                                  }
-                                  }
-                             )
+                                      }
+                                 )
 
         logging.info(f"Total hits: {response['hits']['total']['value']}")
         logging.info(
@@ -705,8 +704,6 @@ def get_summary_and_narratives(df, index_name, es_config):
                            request_timeout=600)
     except Exception as e:
         logging.error(f'Failed to connect to Elasticsearch: {str(e)}')
-
-    st.write('Searching for relevant topics, please wait...')
 
     def query_es(topic_hash_id):
         query = {
