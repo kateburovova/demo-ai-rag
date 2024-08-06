@@ -1,16 +1,16 @@
-import pydantic
 import os
 import yaml
-from pydantic_settings import BaseSettings
+from pydantic import BaseModel
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import Dict, Any, List, Optional
 
 
-class ComparisonMode(BaseSettings):
+class ComparisonMode(BaseModel):
     enabled: bool
     offer_models: Optional[List[str]]
 
 
-class TallyForm(BaseSettings):
+class TallyForm(BaseModel):
     voting_id: str
     voting_width: int
     voting_height: int
@@ -19,13 +19,13 @@ class TallyForm(BaseSettings):
     feedback_height: int
 
 
-class DateRange(BaseSettings):
+class DateRange(BaseModel):
     default_start: Optional[str]
     default_end: Optional[str]
     min_date: str
 
 
-class MiscDisplayOptions(BaseSettings):
+class MiscDisplayOptions(BaseModel):
     display_source_texts: bool
     display_topic_data: bool
     display_issue_selector: bool
@@ -43,20 +43,17 @@ class Config(BaseSettings):
     max_doc_num: int
     num_candidates: int
 
-    class Config:
-        env_file = "config.yaml"
-        env_file_encoding = "yaml"
+    model_config = SettingsConfigDict(env_file=None, extra='ignore')
 
 
 def load_config():
-    # Get the directory of the current file
     current_dir = os.path.dirname(os.path.abspath(__file__))
     config_path = os.path.join(current_dir, 'config.yaml')
 
     try:
         with open(config_path, 'r') as file:
             config_dict = yaml.safe_load(file)
-        return Config(**config_dict)
+        return Config.model_validate(config_dict)
     except FileNotFoundError:
         print(
             f"Config file not found at {config_path}. Please ensure config.yaml is in the same directory as config.py.")
