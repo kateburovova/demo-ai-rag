@@ -311,10 +311,13 @@ if input_question:
 
             # Display summary and narratives for featured topics
             topic_count_df = get_topic_counts(response)
-            topic_indexes = infer_topic_index_names(st.session_state.selected_index)
-            summary_topic_df = get_summary_and_narratives(topic_count_df, topic_indexes, es_config)
-            st.title("Topics")
-            display_topic_dropdown_and_info(summary_topic_df)
+            if topic_count_df:
+                topic_indexes = infer_topic_index_names(st.session_state.selected_index)
+                summary_topic_df = get_summary_and_narratives(topic_count_df, topic_indexes, es_config)
+                st.title("Topics")
+                display_topic_dropdown_and_info(summary_topic_df)
+            else:
+                st.write('No topics with summaries were found.')
 
             if config['debug']['display_source_texts']:
                 st.markdown("### Raw Data for Copying:")

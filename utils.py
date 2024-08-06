@@ -655,7 +655,7 @@ def get_topic_counts(response):
 
     except Exception as e:
         print(f"An error occurred: {e}")
-        return pd.DataFrame()
+        return None
 
 
 def extract_prefix(index_name):
