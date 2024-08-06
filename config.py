@@ -10,6 +10,12 @@ class ComparisonMode(BaseModel):
     offer_models: Optional[List[str]]
 
 
+class Langchain(BaseModel):
+    tracing_v2: str
+    project: str
+    endpoint: str
+
+
 class TallyForm(BaseModel):
     voting_id: str
     voting_width: int
@@ -50,7 +56,7 @@ class Config(BaseSettings):
     comparison_mode: ComparisonMode
     tally_form: TallyForm
     date_range: DateRange
-    langchain: Dict[str, str]
+    langchain: Langchain
     misc_display_options: MiscDisplayOptions
     max_doc_num: int
     num_candidates: int
