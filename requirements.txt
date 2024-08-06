@@ -12,3 +12,4 @@ plotly
 PyYAML
 langchain-openai
 langchain-anthropic
+pydantic

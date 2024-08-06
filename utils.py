@@ -13,13 +13,14 @@ from elasticsearch import Elasticsearch, BadRequestError
 from elasticsearch.exceptions import NotFoundError
 from angle_emb import AnglE, Prompts
 from langchain.prompts import ChatPromptTemplate, HumanMessagePromptTemplate, SystemMessagePromptTemplate
+from config import Config, config
 
 logging.basicConfig(level=logging.INFO)
 
 
-def load_config():
-    with open('config.yaml', 'r') as file:
-        return yaml.safe_load(file)
+# def load_config():
+#     with open('config.yaml', 'r') as file:
+#         return yaml.safe_load(file)
 
 
 def load_es_config():
@@ -39,9 +40,9 @@ def get_default_date_range(config):
     min_date = datetime.strptime(config['date_range']['min_date'], '%Y-%m-%d').date()
     today = datetime.now().date()
 
-    if config['date_range']['default_end'] and config['date_range']['default_start']:
-        default_end_date = datetime.strptime(config['date_range']['default_end'], '%Y-%m-%d').date()
-        default_start_date = datetime.strptime(config['date_range']['default_start'], '%Y-%m-%d').date()
+    if config.date_range['default_end'] and config.date_range['default_start']:
+        default_end_date = datetime.strptime(config.date_range['default_end'], '%Y-%m-%d').date()
+        default_start_date = datetime.strptime(config.date_range['default_start'], '%Y-%m-%d').date()
     else:
         default_end_date = today
         default_start_date = today - timedelta(days=13)  # Last 14 days including today
@@ -90,7 +91,7 @@ def initialize_llm(model_config, api_keys):
 
 def init_llms(config, api_keys):
     llm_models = {}
-    for model in config['llm']['models']:
+    for model in config.llm['models']:
         try:
             llm_models[model['name']] = initialize_llm(model, api_keys)
         except ValueError as e:
@@ -101,9 +102,9 @@ def init_llms(config, api_keys):
 
 
 def init_langsmith_params(config):
-    os.environ["LANGCHAIN_TRACING_V2"] = config['langchain']['tracing_v2']
-    os.environ["LANGCHAIN_PROJECT"] = config['langchain']['project']
-    os.environ["LANGCHAIN_ENDPOINT"] = config['langchain']['endpoint']
+    os.environ["LANGCHAIN_TRACING_V2"] = config.langchain['tracing_v2']
+    os.environ["LANGCHAIN_PROJECT"] = config.langchain['project']
+    os.environ["LANGCHAIN_ENDPOINT"] = config.langchain['endpoint']
     os.environ["LANGCHAIN_API_KEY"] = st.secrets['ld_rag']['LANGCHAIN_API_KEY']
     os.environ["LANGSMITH_ACC"] = st.secrets['ld_rag']['LANGSMITH_ACC']
 
@@ -138,7 +139,7 @@ def pull_prompts(config):
     logging.info(f'langsmith_acc: {langsmith_acc}')
     prompts = {}
 
-    for task, task_config in config['tasks'].items():
+    for task, task_config in config.tasks.items():
         prompt_id = task_config['primary']
         full_prompt_id = f'{langsmith_acc}/{prompt_id}'
         logging.info(f'full_prompt_id: {full_prompt_id}')
@@ -291,7 +292,7 @@ def get_category_field():
 def get_texts_from_elastic(input_question, question_vector, must_term, es_config, config):
     try:
         texts_list = []
-        st.write(f'Running search for {config["max_doc_num"]} relevant posts for question: {input_question}')
+        st.write(f'Running search for {config.max_doc_num} relevant posts for question: {input_question}')
         try:
             es = Elasticsearch(f'https://{es_config["host"]}:{es_config["port"]}', api_key=es_config["api_key"],
                                request_timeout=600)
@@ -300,11 +301,11 @@ def get_texts_from_elastic(input_question, question_vector, must_term, es_config
 
         with st.spinner("Searching for relevant documents, please wait ..."):
             response = es.search(index=st.session_state.selected_index,
-                                 size=config['max_doc_num'],
+                                 size=config.max_doc_num,
                                  knn={"field": "embeddings.WhereIsAI/UAE-Large-V1",
                                       "query_vector": question_vector,
                                       "k": config['max_doc_num'],
-                                      "num_candidates": config['num_candidates'],
+                                      "num_candidates": config.num_candidates,
                                       "filter": {
                                           "bool": {
                                               "must": must_term,

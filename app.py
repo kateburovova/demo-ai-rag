@@ -9,10 +9,11 @@ from datetime import datetime, timedelta
 from authentificate import check_password
 from utils import (display_distribution_charts, populate_default_values,
                    populate_terms, create_must_term, create_dataframe_from_response,
-                   get_prefixed_fields, set_state_defaults, load_config, load_es_config,
+                   get_prefixed_fields, set_state_defaults, load_es_config,
                    get_texts_from_elastic, get_guestion_vector, init_llms, get_keys, generate_output_stream,
                    init_langsmith_params, pull_prompts, get_default_date_range, get_topic_counts,
                    infer_topic_index_names, get_summary_and_narratives)
+from config import Config, config
 
 # External
 import streamlit as st
@@ -22,14 +23,14 @@ import streamlit.components.v1 as components
 
 logging.basicConfig(level=logging.INFO)
 es_config = load_es_config()
-config = load_config()
+# config = load_config()
 api_keys = get_keys()
 llm_models = init_llms(config, api_keys)
 init_langsmith_params(config)
 prompts = pull_prompts(config)
 set_state_defaults()
 
-########## APP start ###########
+# APP start
 st.set_page_config(layout="wide")
 
 logo_url = 'assets/Blue_black_long.png'
@@ -43,7 +44,9 @@ st.markdown('App relies on data, collected and enriched by our team and provides
             'answers. \n'
             'If you are running this app from a mobile device, tap on any '
             'empty space to apply changes to input fields. '
-            'If you experience any technical issues, please [submit the form](https://docs.google.com/forms/d/e/1FAIpQLSfZTr4YoXXsjOOIAMVGYCeGgXd6LOsCQusctJ7hZODaW5HzGQ/viewform?pli=1) by selecting "LD app Technical Issue" for '
+            'If you experience any technical issues, please '
+            '[submit the form](https://docs.google.com/forms/d/e/1FAIpQLSfZTr4YoXXsjOOIAMVGYCeGgXd6LOsCQusctJ7hZODaW5HzGQ/viewform?pli=1) '
+            'by selecting "LD app Technical Issue" for '
             'the type of request. To give feedback for request output, '
             'please use the feedback form at the end of the page.')
 
@@ -57,8 +60,8 @@ with st.expander("Learn more about the app"):
 st.markdown('### Please select search parameters 🔎')
 
 # Get format and pull relevant prompt
-task_options = list(config['tasks'].keys())
-label_options = [config['tasks'][task]['label'] for task in task_options]
+task_options = list(config.tasks.keys())
+label_options = [config.tasks[task]['label'] for task in task_options]
 selected_label = st.radio("Choose the preferred output format:", label_options)
 selected_task = task_options[label_options.index(selected_label)]
 
@@ -66,17 +69,18 @@ if selected_task == 'actor_comparison':
     st.session_state.compare_categories = True
 
 # Offer comparison mode if enabled in config
-if config['comparison_mode']['enabled']:
+if config.comparison_mode['enabled']:
     comparison_mode = st.checkbox("Enable comparison mode")
 else:
     comparison_mode = False
 
 search_option = st.radio(
-    "Choose Specific Indexes if you want to search one or more different indexes, choose All Project Indexes to select all indexes within a project.",
+    "Choose Specific Indexes if you want to search one or more different indexes, choose "
+    "All Project Indexes to select all indexes within a project.",
     ['All Project Indexes', 'Specific Indexes'])
 
 if search_option == 'Specific Indexes':
-    flat_index_list = [index for project in config['project_indexes'].values() for index in project]
+    flat_index_list = [index for project in config.project_indexes.values() for index in project]
     selected_indexes = st.multiselect('Please choose one or more indexes', flat_index_list, default=None,
                                       placeholder="Select one or more indexes")
     if selected_indexes:
@@ -85,16 +89,16 @@ if search_option == 'Specific Indexes':
     else:
         st.session_state.selected_index = None
 else:
-    if len(config['project_indexes']) == 1:  # If we have only 1 project, we don't offer choice of projects
-        selected_indexes = list(config['project_indexes'].values())[0]
+    if len(config.project_indexes) == 1:  # If we have only 1 project, we don't offer choice of projects
+        selected_indexes = list(config.project_indexes.values())[0]
         st.session_state.selected_index = ",".join(selected_indexes)
         st.write(f"We'll search in: {', '.join(selected_indexes)}")
 
     else:
-        project_choice = st.selectbox('Please choose a project', list(config['project_indexes'].keys()), index=None,
+        project_choice = st.selectbox('Please choose a project', list(config.project_indexes.keys()), index=None,
                                       placeholder="Select project")
         if project_choice:
-            selected_indexes = config['project_indexes'][project_choice]
+            selected_indexes = config.project_indexes[project_choice]
             st.session_state.selected_index = ",".join(selected_indexes)
             st.write(f"We'll search in: {', '.join(selected_indexes)}")
 
@@ -192,7 +196,7 @@ else:
 
 logging.info(f"2. Session state: {st.session_state}")
 
-if config['misc_display_options']['display_issue_selector']:
+if config.misc_display_options['display_issue_selector']:
     if issues_fields:
         if st.button('Click to define issues') or st.session_state.show_issues_form:
             st.session_state.show_issues_form = True
@@ -291,16 +295,15 @@ if input_question:
                 end_time = time.time()
                 voting_form_url = f'https://tally.so/embed/{config["tally_form"]["voting_id"]}?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1&model1_id={model1}&model2_id={model2}'
                 components.iframe(voting_form_url,
-                                  width=config['tally_form']['voting_width'],
-                                  height=config['tally_form']['voting_height'],
+                                  width=config.tally_form['voting_width'],
+                                  height=config.tally_form['voting_height'],
                                   scrolling=True)
-
 
             else:
                 start_time = time.time()
                 placeholder = st.empty()
                 content, run_id = generate_output_stream(prompt_template,
-                                                         llm_models[config['llm']['default_model']],
+                                                         llm_models[config.llm['default_model']],
                                                          corrected_texts_list,
                                                          placeholder, input_question)
                 end_time = time.time()
@@ -311,7 +314,7 @@ if input_question:
             st.dataframe(df)
             display_distribution_charts(df, st.session_state.selected_index)
 
-            if config['misc_display_options']['display_topic_data']:
+            if config.misc_display_options['display_topic_data']:
                 topic_count_df = get_topic_counts(response)
                 if not topic_count_df.empty:
                     topic_indexes = infer_topic_index_names(st.session_state.selected_index)
@@ -322,7 +325,7 @@ if input_question:
                 else:
                     st.write('#### No topics with summaries were found.')
 
-            if config['misc_display_options']['display_source_texts']:
+            if config.misc_display_options['display_source_texts']:
                 st.markdown("### Raw Data for Copying:")
                 raw_text = str(corrected_texts_list)
                 st.text_area("Copy this data:", value=raw_text, height=300)
@@ -330,10 +333,10 @@ if input_question:
             # Send rating to Tally
             if not comparison_mode:
                 execution_time = round(end_time - start_time, 2)
-                tally_form_url = f'https://tally.so/embed/{config["tally_form"]["feedback_id"]}?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1&run_id={run_id}&time={execution_time}'
+                tally_form_url = f'https://tally.so/embed/{config.tally_form["feedback_id"]}?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1&run_id={run_id}&time={execution_time}'
                 components.iframe(tally_form_url,
-                                  width=config['tally_form']['feedback_width'],
-                                  height=config['tally_form']['feedback_height'],
+                                  width=config.tally_form['feedback_width'],
+                                  height=config.tally_form['feedback_height'],
                                   scrolling=True)
 
     if st.button('RE-RUN APP'):
