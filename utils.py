@@ -40,7 +40,7 @@ def get_default_date_range(config):
     min_date = datetime.strptime(config.date_range.min_date, '%Y-%m-%d').date()
     today = datetime.now().date()
 
-    if config.date_range['default_end'] and config.date_range.default_start:
+    if config.date_range.default_end and config.date_range.default_start:
         default_end_date = datetime.strptime(config.date_range.default_end, '%Y-%m-%d').date()
         default_start_date = datetime.strptime(config.date_range.default_start, '%Y-%m-%d').date()
     else:
