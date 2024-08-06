@@ -650,11 +650,11 @@ def get_topic_counts(response):
                                                              if isinstance(x, list)
                                                              and isinstance(topic, dict)
                                                              and 'topic_hash_id' in topic]))
-
+        logging.info(f'Retrieved {len(df_selected_fields)} topics.')
         return df_selected_fields['topic_ids'].explode().value_counts()
 
     except Exception as e:
-        print(f"An error occurred: {e}")
+        logging.error(f"An error occurred: {e}")
         return None
 
 
@@ -667,6 +667,8 @@ def infer_topic_index_names(index_string):
     indices = index_string.split(',')
     prefixes = [extract_prefix(index) for index in indices]
     topic_indexes = ['topics-' + prefix for prefix in prefixes]
+    logging.info(f'Inferred topic indexes: {topic_indexes}')
+
     return ','.join(list(set(topic_indexes)))
 
 
@@ -684,7 +686,7 @@ def get_summary_and_narratives(df, index_name, es_config):
         es = Elasticsearch(f'https://{es_config["host"]}:{es_config["port"]}', api_key=es_config["api_key"],
                            request_timeout=600)
     except Exception as e:
-        st.error(f'Failed to connect to Elasticsearch: {str(e)}')
+        logging.error(f'Failed to connect to Elasticsearch: {str(e)}')
 
     def query_es(topic_hash_id):
         query = {
