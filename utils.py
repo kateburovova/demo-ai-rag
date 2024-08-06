@@ -298,6 +298,8 @@ def get_texts_from_elastic(input_question, question_vector, must_term, es_config
         except Exception as e:
             st.error(f'Failed to connect to Elasticsearch: {str(e)}')
 
+        st.write("Searching for documents, please wait...")
+
         response = es.search(index=st.session_state.selected_index,
                              size=config['max_doc_num'],
                              knn={"field": "embeddings.WhereIsAI/UAE-Large-V1",
@@ -318,6 +320,8 @@ def get_texts_from_elastic(input_question, question_vector, must_term, es_config
             f"Sample document: {response['hits']['hits'][0] if response['hits']['hits'] else 'No hits'}")
 
         category_field = get_category_field()
+        logging.info(f'Category_field: {category_field}')
+
         for doc in response['hits']['hits']:
             if '.' in category_field:
                 parts = category_field.split('.')
@@ -326,8 +330,6 @@ def get_texts_from_elastic(input_question, question_vector, must_term, es_config
                 category = doc['_source'].get(category_field, 'Unknown')
 
             texts_list.append((doc['_source']['translated_text'], doc['_source']['url'], category))
-
-        st.write("Searching for documents, please wait...")
 
         # Format urls so they work properly within streamlit
         corrected_texts_list = [(text, 'https://' + url if not url.startswith('http://') and not url.startswith(
