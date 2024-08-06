@@ -315,7 +315,8 @@ if input_question:
                 topic_count_df = get_topic_counts(response)
                 if not topic_count_df.empty:
                     topic_indexes = infer_topic_index_names(st.session_state.selected_index)
-                    summary_topic_df = get_summary_and_narratives(topic_count_df, topic_indexes, es_config)
+                    with st.spinner("Searching for topics..."):
+                        summary_topic_df = get_summary_and_narratives(topic_count_df, topic_indexes, es_config)
                     st.markdown("### Topics")
                     st.dataframe(summary_topic_df)
                 else:

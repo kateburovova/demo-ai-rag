@@ -707,6 +707,7 @@ def get_summary_and_narratives(df, index_name, es_config):
         logging.error(f'Failed to connect to Elasticsearch: {str(e)}')
 
     st.write('Searching for relevant topics, please wait...')
+
     def query_es(topic_hash_id):
         query = {
             "query": {
@@ -751,7 +752,3 @@ def get_summary_and_narratives(df, index_name, es_config):
         df_cleaned = df_cleaned.reset_index(drop=True)
 
     return df_cleaned
-
-
-
-
