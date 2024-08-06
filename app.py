@@ -12,7 +12,7 @@ from utils import (display_distribution_charts, populate_default_values,
                    get_prefixed_fields, set_state_defaults, load_config, load_es_config,
                    get_texts_from_elastic, get_guestion_vector, init_llms, get_keys, generate_output_stream,
                    init_langsmith_params, pull_prompts, get_default_date_range, get_topic_counts,
-                   infer_topic_index_names, get_summary_and_narratives, display_topic_dropdown_and_info)
+                   infer_topic_index_names, get_summary_and_narratives)
 
 # External
 import streamlit as st
