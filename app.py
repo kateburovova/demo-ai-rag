@@ -314,10 +314,10 @@ if input_question:
             if not topic_count_df.empty:
                 topic_indexes = infer_topic_index_names(st.session_state.selected_index)
                 summary_topic_df = get_summary_and_narratives(topic_count_df, topic_indexes, es_config)
-                st.title("Topics")
-                display_topic_dropdown_and_info(summary_topic_df)
+                st.markdown("### Topics")
+                st.dataframe(summary_topic_df)
             else:
-                st.write('No topics with summaries were found.')
+                st.write('#### No topics with summaries were found.')
 
             if config['debug']['display_source_texts']:
                 st.markdown("### Raw Data for Copying:")
