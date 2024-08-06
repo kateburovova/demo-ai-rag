@@ -627,3 +627,134 @@ def search_elastic_below_threshold(es_config, selected_index, question_vector, m
         st.error(f'Failed to connect to Elasticsearch: {str(e)}')
 
         return None
+
+
+def get_topic_counts(response):
+    """
+    Creates a pandas DataFrame from Elasticsearch response data.
+    Returns:
+        pd.DataFrame: A DataFrame containing the selected fields from the response.
+    """
+    try:
+        selected_documents = []
+        for doc in response['hits']['hits']:
+            selected_doc = {
+                'topic_info': doc['_source'].get('topics', 'None'),
+                'id': doc.get('_id', 'None')
+            }
+            selected_documents.append(selected_doc)
+        df_selected_fields = pd.DataFrame(selected_documents)
+
+        df_selected_fields['topic_ids'] = (df_selected_fields.topic_info
+                                           .apply(lambda x: [topic['topic_hash_id'] for topic in x
+                                                             if isinstance(x, list)
+                                                             and isinstance(topic, dict)
+                                                             and 'topic_hash_id' in topic]))
+
+        return df_selected_fields['topic_ids'].explode().value_counts()
+
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return pd.DataFrame()
+
+
+def extract_prefix(index_name):
+    parts = index_name.split('-')
+    return '-'.join(parts[:-1])
+
+
+def infer_topic_index_names(index_string):
+    indices = index_string.split(',')
+    prefixes = [extract_prefix(index) for index in indices]
+    topic_indexes = ['topics-' + prefix for prefix in prefixes]
+    return ','.join(list(set(topic_indexes)))
+
+
+def get_summary_and_narratives(df, index_name, es_config):
+    """
+    Add summary and narratives columns to the DataFrame by querying Elasticsearch,
+    then drop rows where both summary and narratives are None or empty strings.
+
+    :param es_config:
+    :param df: Input DataFrame with 'topic_ids' column
+    :param index_name: Elasticsearch index name
+    :return: DataFrame with added 'summary' and 'narratives' columns, rows with both None or empty dropped
+    """
+    try:
+        es = Elasticsearch(f'https://{es_config["host"]}:{es_config["port"]}', api_key=es_config["api_key"],
+                           request_timeout=600)
+    except Exception as e:
+        st.error(f'Failed to connect to Elasticsearch: {str(e)}')
+
+    def query_es(topic_hash_id):
+        query = {
+            "query": {
+                "term": {
+                    "topic_hash_id.keyword": topic_hash_id
+                }
+            }
+        }
+
+        try:
+            response = es.search(index=index_name, body=query)
+
+            if response['hits']['total']['value'] > 0:
+                hit = response['hits']['hits'][0]['_source']
+                return {
+                    'summary': hit.get('topic_summary'),
+                    'narratives': hit.get('topic_narratives')
+                }
+            else:
+                return {
+                    'summary': None,
+                    'narratives': None
+                }
+
+        except Exception as e:
+            print(f"Error querying Elasticsearch for topic_hash_id {topic_hash_id}: {str(e)}")
+            return {
+                'summary': None,
+                'narratives': None
+            }
+
+    results = df['topic_ids'].apply(query_es)
+    df['summary'] = results.apply(lambda x: x['summary'])
+    df['narratives'] = results.apply(lambda x: x['narratives'])
+
+    def is_empty(value):
+        return value is None or value == ""
+
+    df_cleaned = df[~(df['summary'].apply(is_empty) & df['narratives'].apply(is_empty))]
+
+    if len(df_cleaned) < len(df):
+        df_cleaned = df_cleaned.reset_index(drop=True)
+
+    return df_cleaned
+
+
+def display_topic_dropdown_and_info(df):
+    """
+    Display a dropdown in Streamlit with topic hashes and counts as labels,
+    and print the summary and narratives for the chosen option.
+
+    :param df: DataFrame containing 'topic_ids', 'count', 'summary', and 'narratives' columns
+    """
+    # Create dropdown options
+    options = [f"{row['topic_ids']} (Count: {row['count']})" for _, row in df.iterrows()]
+
+    # Display the dropdown
+    selected_option = st.selectbox("Choose a topic:", options)
+
+    if selected_option:
+        # Extract the topic_id from the selected option
+        selected_topic_id = selected_option.split(" (Count:")[0]
+
+        # Find the corresponding row in the DataFrame
+        selected_row = df[df['topic_ids'] == selected_topic_id].iloc[0]
+
+        # Display the summary and narratives
+        st.subheader("Summary")
+        st.write(selected_row['summary'] if pd.notna(selected_row['summary']) else "No summary available")
+
+        st.subheader("Narratives")
+        st.write(selected_row['narratives'] if pd.notna(selected_row['narratives']) else "No narratives available")

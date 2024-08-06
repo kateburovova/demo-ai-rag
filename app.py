@@ -11,7 +11,8 @@ from utils import (display_distribution_charts, populate_default_values,
                    populate_terms, create_must_term, create_dataframe_from_response,
                    get_prefixed_fields, set_state_defaults, load_config, load_es_config,
                    get_texts_from_elastic, get_guestion_vector, init_llms, get_keys, generate_output_stream,
-                   init_langsmith_params, pull_prompts, get_default_date_range)
+                   init_langsmith_params, pull_prompts, get_default_date_range, get_topic_counts,
+                   infer_topic_index_names, get_summary_and_narratives, display_topic_dropdown_and_info)
 
 # External
 import streamlit as st
@@ -307,6 +308,13 @@ if input_question:
             df = create_dataframe_from_response(response)
             st.dataframe(df)
             display_distribution_charts(df, st.session_state.selected_index)
+
+            # Display summary and narratives for featured topics
+            topic_count_df = get_topic_counts(response)
+            topic_indexes = infer_topic_index_names(st.session_state.selected_index)
+            summary_topic_df = get_summary_and_narratives(topic_count_df, topic_indexes, es_config)
+            st.title("Topics")
+            display_topic_dropdown_and_info(summary_topic_df)
 
             if config['debug']['display_source_texts']:
                 st.markdown("### Raw Data for Copying:")
