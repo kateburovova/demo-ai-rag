@@ -319,6 +319,7 @@ def get_texts_from_elastic(input_question, question_vector, must_term, es_config
 
         for doc in response['hits']['hits']:
             if st.session_state.use_base_category:
+                logging.info(f'st.session_state.use_base_category : {st.session_state.use_base_category}')
                 category = doc['_source'].get('category', None)
             else:
                 if '.' in category_field:
