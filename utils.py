@@ -3,8 +3,8 @@ import streamlit as st
 import plotly.express as px
 import logging
 import os
-import yaml
-
+from typing import Dict, Tuple, List, Any, Optional
+from datetime import date
 from datetime import datetime, timedelta
 from langchain import hub, callbacks
 from langchain_openai import ChatOpenAI
@@ -13,12 +13,27 @@ from elasticsearch import Elasticsearch, BadRequestError
 from elasticsearch.exceptions import NotFoundError
 from angle_emb import AnglE, Prompts
 from langchain.prompts import ChatPromptTemplate, HumanMessagePromptTemplate, SystemMessagePromptTemplate
-from config import Config, config
+from config import Config, LLMModel
+from langchain_openai import ChatOpenAI
+from langchain_anthropic import ChatAnthropic
+from angle_emb import AnglE
 
 logging.basicConfig(level=logging.INFO)
 
 
-def load_es_config():
+def load_es_config() -> Dict[str, str]:
+    """
+    Load Elasticsearch configuration from Streamlit secrets.
+
+    Args:
+    None
+
+    Returns:
+    dict: A dictionary containing Elasticsearch configuration with the following keys:
+        - 'host': The Elasticsearch host address
+        - 'port': The Elasticsearch port number
+        - 'api_key': The API key for authentication with Elasticsearch
+    """
     es_config = {
         'host': st.secrets['ld_rag']['ELASTIC_HOST'],
         'port': st.secrets['ld_rag']['ELASTIC_PORT'],
@@ -27,10 +42,19 @@ def load_es_config():
     return es_config
 
 
-def get_default_date_range(config):
+def get_default_date_range(config: Config) -> Tuple[date, date, date, date]:
     """
     Determine the default date range based on config settings.
-    If default dates are not set in config, use the last 14 days.
+
+    Args:
+    config (Config): The configuration object containing date range settings.
+
+    Returns:
+    Tuple[date, date, date, date]: A tuple containing four date objects:
+        - min_date: The minimum allowed date
+        - default_start_date: The default start date for the range
+        - default_end_date: The default end date for the range
+        - today: The current date
     """
     min_date = datetime.strptime(config.date_range.min_date, '%Y-%m-%d').date()
     today = datetime.now().date()
@@ -49,7 +73,16 @@ def get_default_date_range(config):
     return min_date, default_start_date, default_end_date, today
 
 
-def get_keys():
+def get_keys() -> Dict[str, str]:
+    """
+    Retrieve API keys for OpenAI and Anthropic from Streamlit secrets.
+
+    Returns:
+    Dict[str, str]: A dictionary containing API keys
+
+    Raises:
+    Exception: If there's an error loading the API keys
+    """
     try:
         api_keys = {
             'openai': st.secrets['ld_rag']['OPENAI_KEY_ORG'],
@@ -62,7 +95,20 @@ def get_keys():
         return {}
 
 
-def initialize_llm(model_config, api_keys):
+def initialize_llm(model_config: LLMModel, api_keys: Dict[str, str]):
+    """
+    Initialize a language model based on the provided configuration.
+
+    Args:
+    model_config (LLMModel): Configuration for the language model
+    api_keys (Dict[str, str]): Dictionary containing API keys for different providers
+
+    Returns:
+    BaseChatModel: An initialized language model
+
+    Raises:
+    ValueError: If an unsupported model type or provider is specified
+    """
     provider = model_config.provider
     model_type = model_config.type
     model_name = model_config.name
@@ -84,7 +130,22 @@ def initialize_llm(model_config, api_keys):
         raise ValueError(f"Unsupported model type: {model_type} for provider: {provider}")
 
 
-def init_llms(config, api_keys):
+def init_llms(config: Config, api_keys: Dict[str, str]) -> Dict[str, ChatOpenAI | ChatAnthropic]:
+    """
+    Initialize multiple language models based on the provided configuration.
+
+    Args:
+    config (Config): The configuration object containing LLM settings
+    api_keys (Dict[str, str]): Dictionary containing API keys for different providers
+
+    Returns:
+    Dict[str, ChatOpenAI | ChatAnthropic]: A dictionary of initialized language models,
+        where keys are model names and values are initialized model instances
+
+    Raises:
+    ValueError: If an unsupported model type or provider is specified
+    Exception: For any other errors during model initialization
+    """
     llm_models = {}
     for model in config.llm.models:
         try:
@@ -96,7 +157,18 @@ def init_llms(config, api_keys):
     return llm_models
 
 
-def init_langsmith_params(config):
+def init_langsmith_params(config: Config) -> None:
+    """
+    This function sets the following environment variables:
+    - LANGCHAIN_TRACING_V2
+    - LANGCHAIN_PROJECT
+    - LANGCHAIN_ENDPOINT
+    - LANGCHAIN_API_KEY
+    - LANGSMITH_ACC
+
+    Args:
+    config (Config): The configuration object containing LangSmith settings
+    """
     os.environ["LANGCHAIN_TRACING_V2"] = config.langchain.tracing_v2
     os.environ["LANGCHAIN_PROJECT"] = config.langchain.project
     os.environ["LANGCHAIN_ENDPOINT"] = config.langchain.endpoint
@@ -104,7 +176,16 @@ def init_langsmith_params(config):
     os.environ["LANGSMITH_ACC"] = st.secrets['ld_rag']['LANGSMITH_ACC']
 
 
-def set_state_defaults():
+def set_state_defaults() -> None:
+    """
+    Set default values for various session state variables in a Streamlit application.
+
+    Args:
+    None
+
+    Returns:
+    None"""
+
     if 'formatted_start_date' not in st.session_state:
         st.session_state.formatted_start_date = None
     if 'formatted_end_date' not in st.session_state:
@@ -129,7 +210,21 @@ def set_state_defaults():
         st.session_state.compare_categories = False
 
 
-def pull_prompts(config):
+def pull_prompts(config: Config) -> Dict[str, ChatPromptTemplate]:
+    """
+    Pull prompt templates for different tasks from LangSmith.
+    If a prompt fails to load, a default prompt is created and used instead.
+
+    Args:
+    config (Config): The configuration object containing task settings
+
+    Returns:
+    Dict[str, ChatPromptTemplate]: A dictionary where keys are task names and values are
+    corresponding ChatPromptTemplate objects
+
+    Raises:
+    Exception: If there's an error pulling a prompt from LangSmith
+    """
     langsmith_acc = os.environ.get("LANGSMITH_ACC", "")
     logging.info(f'langsmith_acc: {langsmith_acc}')
     prompts = {}
@@ -159,7 +254,28 @@ def pull_prompts(config):
     return prompts
 
 
-def generate_output_stream(prompt_template, llm, texts, placeholder, input_question):
+# (prompt_template, llm, texts, placeholder, input_question):
+
+def generate_output_stream(prompt_template: ChatPromptTemplate,
+                           llm: Any,
+                           texts: List[Any],
+                           placeholder: st.empty,
+                           input_question: str) -> Tuple[str, str]:
+    """
+    Generate a stream of output from a language model and display it in a Streamlit app.
+
+    Args:
+    prompt_template (ChatPromptTemplate): The template for formatting the prompt
+    llm: The language model to use for generation
+    texts (List[Any]): The list of texts to be included in the prompt
+    placeholder (st.empty): A Streamlit empty placeholder for displaying the output
+    input_question (str): The input question to be answered
+
+    Returns:
+    Tuple[str, str]: A tuple containing:
+        - The generated content as a string
+        - The run ID of the generation process
+    """
     customer_messages = prompt_template.format_messages(
         question=input_question,
         texts=texts
@@ -173,11 +289,20 @@ def generate_output_stream(prompt_template, llm, texts, placeholder, input_quest
     return "".join(content), run_id
 
 
-def get_unique_category_values(index_name, field, es_config):
+def get_unique_category_values(index_name: str, field: str, es_config: Dict[str, str]) -> List[str]:
     """
-    Retrieve unique values from the field in a specified Elasticsearch index.
+    Retrieve unique values from a specified field in an Elasticsearch index.
+
+    Args:
+    index_name (str): The name of the Elasticsearch index to search
+    field (str): The field name to aggregate unique values from
+    es_config (Dict[str, str]): Elasticsearch configuration containing host, port, and API key
+
     Returns:
-    list: A list of unique values from the 'category.keyword' field.
+    List[str]: A list of unique values from the specified field
+
+    Raises:
+    Exception: If there's an error retrieving values from Elasticsearch
     """
     try:
         es = Elasticsearch(f'https://{es_config["host"]}:{es_config["port"]}', api_key=es_config["api_key"],
@@ -202,17 +327,21 @@ def get_unique_category_values(index_name, field, es_config):
 
 
 @st.cache_data(ttl=3600, show_spinner=False)  # Cache for 1 hour
-def get_multiple_unique_values(index_name, fields, es_config):
+def get_multiple_unique_values(index_name: str, fields: List[str], es_config: Dict[str, str]) -> Dict[str, List[str]]:
     """
     Retrieve unique values from multiple fields in a specified Elasticsearch index.
+    It is cached using Streamlit's st.cache_data decorator with a respective TTL.
 
     Args:
-    index_name (str): The name of the Elasticsearch index.
-    fields (list): A list of field names to aggregate.
-    es_config (dict): Elasticsearch configuration.
+    index_name (str): The name of the Elasticsearch index to search
+    fields (List[str]): A list of field names to aggregate unique values from
+    es_config (Dict[str, str]): Elasticsearch configuration containing host, port, and API key
 
     Returns:
-    dict: A dictionary with field names as keys and lists of unique values as values.
+    Dict[str, List[str]]: A dictionary with field names as keys and lists of unique values as values
+
+    Raises:
+    Exception: If there's an error retrieving values from Elasticsearch
     """
     try:
         es = Elasticsearch(f'https://{es_config["host"]}:{es_config["port"]}', api_key=es_config["api_key"],
@@ -241,11 +370,29 @@ def get_multiple_unique_values(index_name, fields, es_config):
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
-def populate_default_values(index_name, es_config):
+def populate_default_values(index_name: str, es_config: Dict[str, str]) -> Tuple[
+    List[str], List[str], List[str], List[str]]:
     """
     Retrieves unique values for specified fields from an Elasticsearch index
-    and appends an "Any" option to each list from the specified Elasticsearch index.
+    and appends an "Any" option to each list.
+
+    Args:
+    index_name (str): The name of the Elasticsearch index to search
+    es_config (Dict[str, str]): Elasticsearch configuration containing host, port, and API key
+
+    Returns:
+    Tuple[List[str], List[str], List[str], List[str]]: A tuple containing four lists:
+        - category_level_one_values: Unique values for category level one
+        - category_level_two_values: Unique values for category level two (if applicable)
+        - language_values: Unique values for languages
+        - country_values: Unique values for countries
+
+    Note:
+    This function is cached using Streamlit's st.cache_data decorator with a TTL of 1 hour.
+    The fields queried depend on the index name (e.g., 'dem-arm', 'ru-balkans', or others).
+    An "Any" option is appended to each list of unique values.
     """
+
     logging.info(f"Populating selectors for index name: {index_name}")
     if "dem-arm" in index_name:
         logging.info(f"Populating for categories with dem-arm: {index_name}")
@@ -280,14 +427,49 @@ def populate_default_values(index_name, es_config):
             sorted(country_values))
 
 
-def get_category_field():
+def get_category_field() -> str:
+    """
+    Determine the appropriate category field based on the selected index.
+    This function relies on the 'selected_index' value in the Streamlit session state.
+
+    Returns:
+    str: The appropriate category field name
+        - 'misc.category_one.keyword' for 'dem-arm' or 'ru-balkans' indexes
+        - 'category.keyword' for all other indexes
+    """
     if "dem-arm" in st.session_state.selected_index or "ru-balkans" in st.session_state.selected_index:
         return 'misc.category_one.keyword'
     else:
         return 'category.keyword'
 
 
-def get_texts_from_elastic(input_question, question_vector, must_term, es_config, config):
+def get_texts_from_elastic(
+        input_question: str,
+        question_vector: List[float],
+        must_term: List[Dict[str, Any]],
+        es_config: Dict[str, str],
+        config: Config) -> Tuple[List[Tuple[str, str, str]], Dict[str, Any]]:
+    """
+    Retrieve relevant texts from Elasticsearch based on the input question and filters.
+    Correct URLs to ensure they start with 'http://' or 'https://'.
+
+    Args:
+    input_question (str): The user's input question
+    question_vector (List[float]): The vector representation of the input question
+    must_term (List[Dict[str, Any]]): A list of filter conditions for the Elasticsearch query
+    es_config (Dict[str, str]): Elasticsearch configuration containing host, port, and API key
+    config (Config): The configuration object containing search settings
+
+    Returns:
+    Tuple[List[Tuple[str, str, str]], Dict[str, Any]]: A tuple containing:
+        - A list of tuples, each containing (text, url, category) for relevant documents
+        - The raw Elasticsearch response
+
+    Raises:
+    BadRequestError: If there's an error executing the search (e.g., missing embeddings)
+    NotFoundError: If the specified index is not found
+    Exception: For any other errors during the search process
+    """
     try:
         texts_list = []
         st.write(f'Running search for {config.max_doc_num} relevant posts for question: {input_question}')
@@ -352,13 +534,30 @@ def get_texts_from_elastic(input_question, question_vector, must_term, es_config
 
 
 @st.cache_resource(hash_funcs={"_thread.RLock": lambda _: None, "builtins.weakref": lambda _: None}, show_spinner=False)
-def load_model():
+def load_model() -> AnglE:
+    """
+    Load and initialize the AnglE embedding model - the 'WhereIsAI/UAE-Large-V1' model with 'cls' pooling strategy.
+    The cache is set up to ignore thread locks and weak references for hashing.
+
+    Returns:
+    AnglE: An initialized AnglE model instance
+    """
     angle_model = AnglE.from_pretrained('WhereIsAI/UAE-Large-V1',
                                         pooling_strategy='cls')
     return angle_model
 
 
-def get_guestion_vector(input_question):
+def get_guestion_vector(input_question: str) -> List[float]:
+    """
+    Generate a vector representation of the input question using the AnglE model.
+    The encoding is done using the 'C' prompt from the AnglE.Prompts enum.
+
+    Args:
+    input_question (str): The input question to be vectorized
+
+    Returns:
+    List[float]: A list of floats representing the vector encoding of the input question
+    """
     angle = load_model()
     vec = angle.encode({'text': input_question}, to_numpy=True, prompt=Prompts.C)
     question_vector = vec.tolist()[0]
@@ -366,7 +565,19 @@ def get_guestion_vector(input_question):
 
 
 @st.cache_data(ttl=3600, show_spinner=False)  # Cache for 1 hour
-def get_prefixed_fields(index_, prefix, es_config):
+def get_prefixed_fields(index_: str, prefix: str, es_config: Dict[str, str]) -> List[str]:
+    """
+    Retrieve field names with a specific prefix from Elasticsearch index mappings.
+    Searches for fields in all indices matching the base index pattern derived from the input index name.
+
+    Args:
+    index_ (str): The name of the Elasticsearch index (or index pattern)
+    prefix (str): The prefix to filter field names
+    es_config (Dict[str, str]): Elasticsearch configuration containing host, port, and API key
+
+    Returns:
+    List[str]: A list of field names that start with the given prefix
+    """
     es = Elasticsearch(f'https://{es_config["host"]}:{es_config["port"]}', api_key=es_config["api_key"],
                        request_timeout=600)
     base_index = '-'.join(index_.split('-')[:2])
@@ -387,10 +598,21 @@ def get_prefixed_fields(index_, prefix, es_config):
     return list(all_fields)
 
 
-def add_issues_conditions(must_list, thresholds_dict):
+def add_issues_conditions(must_list: List[Dict], thresholds_dict: Dict[str, str]) -> None:
     """
     Adds "issues" field conditions to the Elasticsearch query based on a given dictionary of thresholds.
-    thresholds_dict: A dictionary with keys as "issues" fields and values as threshold ranges in the format "min:max".
+
+    Args:
+    must_list (List[Dict]): The list of must conditions for the Elasticsearch query
+    thresholds_dict (Dict[str, str]): A dictionary with keys as "issues" fields and values as threshold ranges
+    in the format "min:max"
+
+    Returns:
+    None
+
+    Note:
+    This function modifies the must_list in-place by appending a new condition for each issue field.
+    The condition uses Elasticsearch's range query to filter documents based on the provided thresholds.
     """
     issues_conditions = []
 
@@ -414,7 +636,19 @@ def add_issues_conditions(must_list, thresholds_dict):
     })
 
 
-def extract_fields(mapping, prefix, current_path=''):
+def extract_fields(mapping: Dict[str, Any], prefix: str, current_path: str = '') -> List[str]:
+    """
+    Recursively extract field names from an Elasticsearch mapping that start with a given prefix.
+    Builds the field names by concatenating the current path with field names in the mapping.
+
+    Args:
+    mapping (Dict[str, Any]): The Elasticsearch mapping dictionary
+    prefix (str): The prefix to filter field names
+    current_path (str): The current path in the mapping hierarchy (default: '')
+
+    Returns:
+    List[str]: A list of field names that start with the given prefix
+    """
     fields = []
     if 'properties' in mapping:
         for field, props in mapping['properties'].items():
@@ -425,11 +659,18 @@ def extract_fields(mapping, prefix, current_path=''):
     return fields
 
 
-def populate_terms(selected_items, field):
+def populate_terms(selected_items: Optional[List[str]], field: str) -> List[str]:
     """
     Creates a list of terms for Elasticsearch based on selected items.
+    This function filters out the "Any" option and returns an empty list if "Any" is selected
+    or if selected_items is None.
+
+    Args:
+    selected_items (Optional[List[str]]): A list of selected items or None
+    field (str): The field name associated with the selected items
+
     Returns:
-        list: A list of selected terms.
+    List[str]: A list of selected terms, excluding "Any" and empty when None or "Any" is selected
     """
     logging.info(f"Populating terms for {field}: {selected_items}")
     if (selected_items is None) or ("Any" in selected_items):
@@ -438,15 +679,49 @@ def populate_terms(selected_items, field):
         return selected_items
 
 
-def add_terms_condition(must_list, terms, field):
+def add_terms_condition(must_list: List[Dict], terms: List[str], field: str) -> None:
+    """
+    Adds a terms condition to the Elasticsearch query if terms are provided.
+
+    Args:
+    must_list (List[Dict]): The list of must conditions for the Elasticsearch query
+    terms (List[str]): The list of terms to be added to the condition
+    field (str): The field name to which the terms condition should be applied
+
+    Returns:
+    None
+    """
     if terms:
         must_list.append({
             "terms": {field: terms}
         })
 
 
-def create_must_term(category_one_terms, category_two_terms, language_terms, country_terms, formatted_start_date,
-                     formatted_end_date, thresholds_dict=None):
+def create_must_term(
+        category_one_terms: List[str],
+        category_two_terms: List[str],
+        language_terms: List[str],
+        country_terms: List[str],
+        formatted_start_date: str,
+        formatted_end_date: str,
+        thresholds_dict: Optional[Dict[str, str]] = None) -> List[Dict]:
+    """
+    Create a list of must terms for an Elasticsearch query based on various filters.
+    This function constructs filters based on category, language, country, date range, and thresholds.
+    It uses session state to determine whether to use base categories or misc categories.
+
+    Args:
+    category_one_terms (List[str]): Terms for the first category level
+    category_two_terms (List[str]): Terms for the second category level
+    language_terms (List[str]): Terms for language filtering
+    country_terms (List[str]): Terms for country filtering
+    formatted_start_date (str): Start date for the date range filter
+    formatted_end_date (str): End date for the date range filter
+    thresholds_dict (Optional[Dict[str, str]]): Dictionary of threshold values for issues filtering
+
+    Returns:
+    List[Dict]: A list of must terms to be used in an Elasticsearch query
+    """
     logging.info(f"At the start of create_must_term, use_base_category: {st.session_state.use_base_category}")
 
     logging.info(
@@ -481,11 +756,15 @@ def create_must_term(category_one_terms, category_two_terms, language_terms, cou
     return must_term
 
 
-def create_dataframe_from_response(response):
+def create_dataframe_from_response(response: Dict[str, Any]) -> pd.DataFrame:
     """
     Creates a pandas DataFrame from Elasticsearch response data.
+
+    Args:
+    response (Dict[str, Any]): The Elasticsearch response containing search hits
+
     Returns:
-        pd.DataFrame: A DataFrame containing the selected fields from the response.
+    pd.DataFrame: A DataFrame containing selected fields from the response
     """
     try:
         selected_documents = []
@@ -524,10 +803,23 @@ def create_dataframe_from_response(response):
         return pd.DataFrame()
 
 
-def display_distribution_charts(df, selected_index):
+def display_distribution_charts(df: pd.DataFrame, selected_index: str) -> None:
     """
-    Displays donut charts for category, language, and country distributions in Streamlit.
-    The layout is three columns with one donut chart in each column.
+    Displays donut charts for category, language, and country distributions in a Streamlit application.
+
+    Args:
+    df (pd.DataFrame): The DataFrame containing the data to be visualized
+    selected_index (str): The name of the selected Elasticsearch index
+
+    Returns:
+    None
+
+    Note:
+    This function creates different chart layouts based on the selected index:
+    - For 'dem-arm' indexes, it displays four charts: category one, category two, language, and country
+    - For other indexes, it displays three charts: category, language, and country
+    The charts are created using Plotly Express and displayed in Streamlit columns.
+    If the DataFrame is empty, a message is displayed instead of charts.
     """
 
     if df.empty:
@@ -590,7 +882,23 @@ def display_distribution_charts(df, selected_index):
             col3.plotly_chart(fig_country, use_container_width=True)
 
 
-def create_dataframe_from_response_filtered(response, score_threshold=0.7):
+# Not used currently
+def create_dataframe_from_response_filtered(response: Dict[str, Any], score_threshold: float = 0.7) -> pd.DataFrame:
+    """
+    Creates a filtered pandas DataFrame from Elasticsearch response data based on a similarity score threshold.
+
+    Args:
+    response (Dict[str, Any]): The Elasticsearch response containing search hits
+    score_threshold (float): The minimum similarity score for including a hit in the DataFrame (default: 0.7)
+
+    Returns:
+    pd.DataFrame: A DataFrame containing data from hits that meet or exceed the score threshold
+
+    Note:
+    This function filters the Elasticsearch hits based on the '_score' field.
+    It includes all fields from the '_source' of each hit that meets the threshold.
+    The similarity score is added as an additional column 'similarity_score' in the resulting DataFrame.
+    """
     records = []
     for hit in response['hits']['hits']:
         if hit['_score'] >= score_threshold:
@@ -604,7 +912,29 @@ def create_dataframe_from_response_filtered(response, score_threshold=0.7):
     return df
 
 
-def search_elastic_below_threshold(es_config, selected_index, question_vector, must_term, max_doc_num=10000):
+# Not used currently
+def search_elastic_below_threshold(
+        es_config: Dict[str, str],
+        selected_index: str,
+        question_vector: List[float],
+        must_term: List[Dict],
+        max_doc_num: int = 10000) -> Optional[pd.DataFrame]:
+    """
+    Perform an Elasticsearch search with k-NN query and additional filters.
+
+    Args:
+    es_config (Dict[str, str]): Elasticsearch configuration containing host, port, and API key
+    selected_index (str): The name of the Elasticsearch index to search
+    question_vector (List[float]): The vector representation of the question for k-NN search
+    must_term (List[Dict]): Additional filter conditions for the Elasticsearch query
+    max_doc_num (int): Maximum number of documents to retrieve (default: 10000)
+
+    Returns:
+    Optional[pd.DataFrame]: A DataFrame containing the search results, or None if an error occurs
+
+    Raises:
+    Exception: If there's an error connecting to Elasticsearch or executing the search
+    """
     try:
         es = Elasticsearch(f'https://{es_config["host"]}:{es_config["port"]}', api_key=es_config["api_key"],
                            request_timeout=600)
@@ -632,11 +962,20 @@ def search_elastic_below_threshold(es_config, selected_index, question_vector, m
         return None
 
 
-def get_topic_counts(response):
+def get_topic_counts(response: Dict[str, Any]) -> pd.DataFrame:
     """
-    Creates a pandas DataFrame from Elasticsearch response data.
+    Creates a pandas DataFrame of topic counts from Elasticsearch response data.
+
+    Args:
+    response (Dict[str, Any]): The Elasticsearch response containing search hits
+
     Returns:
-        pd.DataFrame: A DataFrame containing the selected fields from the response.
+    pd.DataFrame: A DataFrame containing topic IDs and their counts, with columns 'topic_ids' and 'count'
+
+    Note:
+    This function extracts topic information from the 'topics' field in each hit's source.
+    It creates a list of topic hash IDs for each document, then explodes this list to count occurrences.
+    If no topics are found or an error occurs, an empty DataFrame with 'topic_ids' and 'count' columns is returned.
     """
     try:
         selected_documents = []
@@ -662,7 +1001,17 @@ def get_topic_counts(response):
         return pd.DataFrame(columns=['topic_ids', 'count'])
 
 
-def extract_prefix(index_name):
+def extract_prefix(index_name: str) -> str:
+    """
+    Extract the prefix from an Elasticsearch index name by removing platform suffixes.
+    Function splits the index name by hyphens and rejoins the parts after removing the suffixes.
+
+    Args:
+    index_name (str): The full name of the Elasticsearch index
+
+    Returns:
+    str: The extracted prefix of the index name
+    """
     platform_suffixes = ['tiktok',
                          'facebook',
                          'twitter',
@@ -679,7 +1028,22 @@ def extract_prefix(index_name):
     return '-'.join(parts_cleaned)
 
 
-def infer_topic_index_names(index_string):
+def infer_topic_index_names(index_string: str) -> str:
+    """
+    Infer the names of topic indices based on a given string of data index names.
+
+    Args:
+    index_string (str): A comma-separated string of data index names
+
+    Returns:
+    str: A comma-separated string of inferred topic index names
+
+    Note:
+    This function splits the input string into individual index names.
+    It extracts the prefix of each index name using the extract_prefix function.
+    The topic index names are created by prepending 'topics-' to each extracted prefix.
+    Duplicate topic index names are removed.
+    """
     indices = index_string.split(',')
     prefixes = [extract_prefix(index) for index in indices]
     topic_indexes = ['topics-' + prefix for prefix in prefixes]
@@ -688,15 +1052,21 @@ def infer_topic_index_names(index_string):
     return ','.join(list(set(topic_indexes)))
 
 
-def get_summary_and_narratives(df, index_name, es_config):
+def get_summary_and_narratives(df: pd.DataFrame, index_name: str, es_config: Dict[str, str]) -> pd.DataFrame:
     """
-    Add summary and narratives columns to the DataFrame by querying Elasticsearch,
-    then drop rows where both summary and narratives are None or empty strings.
+    Add summary and narratives columns to the DataFrame by querying Elasticsearch.
 
-    :param es_config:
-    :param df: Input DataFrame with 'topic_ids' column
-    :param index_name: Elasticsearch index name
-    :return: DataFrame with added 'summary' and 'narratives' columns, rows with both None or empty dropped
+    Args:
+    df (pd.DataFrame): Input DataFrame with 'topic_ids' column
+    index_name (str): Elasticsearch index name for topic data
+    es_config (Dict[str, str]): Elasticsearch configuration containing host, port, and API key
+
+    Returns:
+    pd.DataFrame: DataFrame with added 'summary' and 'narratives' columns,
+                  rows with both None or empty dropped
+
+    Raises:
+    Exception: If there's an error connecting to Elasticsearch
     """
     try:
         es = Elasticsearch(f'https://{es_config["host"]}:{es_config["port"]}', api_key=es_config["api_key"],
