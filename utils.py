@@ -248,10 +248,13 @@ def populate_default_values(index_name, es_config):
     """
     logging.info(f"Populating selectors for index name: {index_name}")
     if "dem-arm" in index_name:
+        logging.info(f"Populating for categories with dem-arm: {index_name}")
         fields = ['misc.category_one.keyword', 'misc.category_two.keyword', 'language_text.keyword', 'country.keyword']
     elif "ru-balkans" in index_name:
+        logging.info(f"Populating for categories with ru-balkans: {index_name}")
         fields = ['misc.category_one.keyword', 'language_text.keyword', 'country.keyword']
     else:
+        logging.info(f"Populating for base categories: {index_name}")
         fields = ['category.keyword', 'language_text.keyword', 'country.keyword']
 
     unique_values = get_multiple_unique_values(index_name, fields, es_config)
