@@ -51,6 +51,38 @@ project_indexes:
     - 'dem-by-instagram'
     - 'dem-by-web'
     - 'dem-by-whisper-tiktok'
+  'ua-by':
+    - 'ua-by-facebook'
+    - 'ua-by-telegram'
+    - 'ua-by-web'
+    - 'ua-by-youtube'
+  'dm-8-countries':
+    - 'dm-8-countries-twitter'
+    - 'dm-8-countries-telegram'
+  'recovery-win':
+    - 'recovery-win-facebook'
+    - 'recovery-win-telegram'
+    - 'recovery-win-web'
+    - 'recovery-win-twitter'
+    - 'recovery-win-comments-telegram'
+  'ru-balkans':
+    - 'ru-balkans-facebook'
+    - 'ru-balkans-telegram'
+    - 'ru-balkans-youtube'
+    - 'ru-balkans-sample-facebook'
+    - 'ru-balkans-sample-telegram'
+    - 'ru-balkans-sample-youtube'
+  'arabic_test':
+    - 'arabic-translation-test-web'
+    - 'cs-disininfo-iq-telegram'
+  'detector-media':
+    - 'detector-media-tiktok'
+  'eu4ge':
+    - 'eu4ge-facebook'
+    - 'eu4ge-web'
+    - 'eu4ge-instagram'
+    - 'eu4ge-telegram'
+    - 'eu4ge-tiktok'
 
 # Tally form configuration
 tally_form:
