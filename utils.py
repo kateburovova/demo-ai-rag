@@ -1,22 +1,24 @@
-import pandas as pd
-import streamlit as st
-import plotly.express as px
+# Base
 import logging
 import os
-from typing import Dict, Tuple, List, Any, Optional
-from datetime import date
-from datetime import datetime, timedelta
-from langchain import hub, callbacks
-from langchain_openai import ChatOpenAI
-from langchain_anthropic import ChatAnthropic
-from elasticsearch import Elasticsearch, BadRequestError
-from elasticsearch.exceptions import NotFoundError
+from datetime import date, datetime, timedelta
+from typing import Any, Dict, List, Optional, Tuple
+
+# External
+import pandas as pd
+import plotly.express as px
+import streamlit as st
 from angle_emb import AnglE, Prompts
-from langchain.prompts import ChatPromptTemplate, HumanMessagePromptTemplate, SystemMessagePromptTemplate
-from config import Config, LLMModel
-from langchain_openai import ChatOpenAI
+from elasticsearch import BadRequestError, Elasticsearch
+from elasticsearch.exceptions import NotFoundError
+from langchain import callbacks, hub
+from langchain.prompts import (ChatPromptTemplate, HumanMessagePromptTemplate,
+                               SystemMessagePromptTemplate)
 from langchain_anthropic import ChatAnthropic
-from angle_emb import AnglE
+from langchain_openai import ChatOpenAI
+
+# Internal
+from config import Config, LLMModel
 
 logging.basicConfig(level=logging.INFO)
 

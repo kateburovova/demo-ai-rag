@@ -4,6 +4,10 @@ import logging
 import random
 from datetime import datetime, timedelta
 
+# External
+import streamlit as st
+import streamlit.components.v1 as components
+
 # Internal
 from authentificate import check_password
 from utils import (display_distribution_charts, populate_default_values,
@@ -12,11 +16,7 @@ from utils import (display_distribution_charts, populate_default_values,
                    get_texts_from_elastic, get_guestion_vector, init_llms, get_keys, generate_output_stream,
                    init_langsmith_params, pull_prompts, get_default_date_range, get_topic_counts,
                    infer_topic_index_names, get_summary_and_narratives)
-from config import Config, config
-
-# External
-import streamlit as st
-import streamlit.components.v1 as components
+from config import config
 
 # Setting basic configurations
 logging.basicConfig(level=logging.INFO)
