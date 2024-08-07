@@ -8,6 +8,6 @@
 
 4️⃣ App works faster due to optimised flow of forms instead if popups.
 
-### *👆Important!*
+### *👇Important!*
 
 To apply your choice in menu, please always click "Save my choice".
