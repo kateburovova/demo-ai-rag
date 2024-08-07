@@ -49,9 +49,13 @@ st.markdown('App relies on data, collected and enriched by our team and provides
 
 with open('assets/How_to.md', 'r') as file:
     markdown_content = file.read()
+with open('assets/Release_notes.md', 'r') as file:
+    notes_content = file.read()
 
 with st.expander("Learn more about the app"):
     st.markdown(markdown_content, unsafe_allow_html=True)
+with st.expander("New in the latest version", icon="🪄"):
+    st.markdown(notes_content, unsafe_allow_html=True)
 
 # Get input parameters
 st.markdown('### Please select search parameters 🔎')
