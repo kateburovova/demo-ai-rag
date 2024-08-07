@@ -11,7 +11,7 @@ class ComparisonMode(BaseModel):
 
 
 class Langchain(BaseModel):
-    tracing_v2: str
+    tracing_v2: str  # important that it's not bool
     project: str
     endpoint: str
 

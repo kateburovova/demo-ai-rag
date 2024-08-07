@@ -2,7 +2,6 @@
 import time
 import logging
 import random
-
 from datetime import datetime, timedelta
 
 # Internal
@@ -20,7 +19,6 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 # Setting basic configurations
-
 logging.basicConfig(level=logging.INFO)
 es_config = load_es_config()
 api_keys = get_keys()
